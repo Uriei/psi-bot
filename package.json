@@ -1,0 +1,59 @@
+{
+  "name": "psi-bot",
+  "version": "0.0.1",
+  "description": "Discord Bot for the PSI Community",
+  "scripts": {
+    "prestart": "npm run build",
+    "start": "node ./dist/app.js",
+    "prebuild": "npm run lint && rimraf dist",
+    "build": "tsc -p tsconfig.json",
+    "postbuild": "node ./scripts/postbuild.js",
+    "prebuild:dev": "npm run prebuild",
+    "build:dev": "tsc -p tsconfig.dev.json",
+    "postbuild:dev": "node ./scripts/postbuild.js dev",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "google-spreadsheet": "^3.3.0",
+    "html-entities": "^2.3.3",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "mongoose": "^6.7.5",
+    "rss-parser": "^3.12.0",
+    "twitter-api-v2": "^1.12.9"
+  },
+  "devDependencies": {
+    "@types/google-spreadsheet": "^3.3.0",
+    "@types/lodash": "^4.14.191",
+    "@types/xml2js": "^0.4.11",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.29.0",
+    "jest": "^29.3.1",
+    "node": "^18.12.1",
+    "prettier": "^2.8.0",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Uriei/psi-bot.git"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "psi",
+    "elite dangerous"
+  ],
+  "author": "Uriei <uriei@protonmail.com>",
+  "license": "CC BY-NC-SA 4.0",
+  "bugs": {
+    "url": "https://github.com/Uriei/psi-bot/issues"
+  },
+  "homepage": "https://github.com/Uriei/psi-bot#readme",
+  "engines": {
+    "node": "^18"
+  },
+  "private": true
+}
