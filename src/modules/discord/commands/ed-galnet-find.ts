@@ -55,7 +55,7 @@ export default {
     async autocomplete(interaction: AutocompleteInteraction) {
       const db = await DB.getInstance();
       const focusedValue = _upperCase(interaction.options.getFocused());
-      const focusedValuePerWord = focusedValue.split(/[\n\r\s\-'":!]/g);
+      const focusedValuePerWord = focusedValue.split(/\W/g);
       const choices: Array<string> = (await db.getGalnetAll()).map(
         (g) => g.title,
       );
@@ -70,7 +70,8 @@ export default {
       // This one finds the words anywhere in the title without checking the order
       const filteredIncludesSplitted: Array<string> = choices.filter(
         (choice) =>
-          choice && focusedValuePerWord.every((w) => choice.includes(w)),
+          choice &&
+          focusedValuePerWord.every((w) => _upperCase(choice).includes(w)),
       );
 
       // This one finds the words anywhere in the title in the same order
