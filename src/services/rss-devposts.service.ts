@@ -4,11 +4,11 @@ import { DB } from '../modules/database';
 import { Discord } from '../modules/discord/discord';
 import { Google } from '../modules/g-docs';
 import {
-  getEliteDevPostsFeed,
-  IDevPostsRssItem,
   IDevPostsRssResponse,
-} from '../modules/rss';
-import { prepareEliteDevDiscordMessage } from '../modules/utils';
+  IDevPostsRssItem,
+} from '../modules/models/rss.model';
+import { getEliteDevPostsFeed } from '../modules/rss';
+import { prepareRssEliteDevDiscordMessage } from '../modules/utils';
 
 export class DevPostsService {
   private static instance: DevPostsService;
@@ -139,7 +139,7 @@ export class DevPostsService {
 
   private async sendDevPostsToDiscord(newDevPosts: Array<IDevPostsRssItem>) {
     for (const entry of newDevPosts) {
-      const preparedDiscordMessage = prepareEliteDevDiscordMessage(entry);
+      const preparedDiscordMessage = prepareRssEliteDevDiscordMessage(entry);
       await this.discord?.sendEliteDevPost(preparedDiscordMessage);
     }
   }

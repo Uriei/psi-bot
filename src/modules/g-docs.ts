@@ -91,6 +91,8 @@ export class Google {
               .formattedValue,
             content: this.galnetSheet?.getCell(item.rowIndex - 1, 3)
               .formattedValue,
+            link: this.galnetSheet?.getCell(item.rowIndex - 1, 4)
+              .formattedValue,
           };
           galnetEntries.push(entry);
         }
@@ -104,9 +106,10 @@ export class Google {
     date: string,
     title: string,
     content: string,
+    link: string,
   ) {
     if (this.testMode) return;
-    const entry = [guid, date, title, content];
+    const entry = [guid, date, title, content, link];
     if (this.galnetSheet && entry) {
       return this.galnetSheet
         .addRow(entry)

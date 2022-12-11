@@ -1,5 +1,9 @@
-import { DB, ISystemData } from '../modules/database';
+import { DB } from '../modules/database';
 import { first as _first, upperCase as _upperCase } from 'lodash';
+import {
+  IEdsmSystemData,
+  ISystemData,
+} from '../modules/models/system-data.model';
 
 const EDSM_API_SYSTEMS = 'https://www.edsm.net/api-v1/systems';
 
@@ -82,32 +86,4 @@ export async function getFormattedSystemName(systemName: string) {
   const systems = await getSystemData(systemName);
   const system = _first(systems);
   return system?.systemName;
-}
-
-export interface IEdsmSystemData {
-  name: string;
-  id: number;
-  id64: number;
-  coords: IEdsmSystemCoords;
-  coordsLocked: boolean;
-  requirePermit: boolean;
-  permitName: string;
-  information: IEdsmSystemInfo;
-}
-
-export interface IEdsmSystemCoords {
-  x: number;
-  y: number;
-  z: number;
-}
-export interface IEdsmSystemInfo {
-  allegiance: string;
-  government: string;
-  population: number;
-  security: string;
-  economy: string;
-  secondEconomy: string;
-  reserve: string;
-  faction: string;
-  factionState: string;
 }

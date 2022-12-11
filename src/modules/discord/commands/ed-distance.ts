@@ -7,8 +7,9 @@ import {
   calculateDistance,
   getFormattedSystemName,
 } from '../../../helpers/ed-distance-calc.helper';
-import { DB, ISystemData } from '../../database';
+import { DB } from '../../database';
 import { upperCase as _upperCase } from 'lodash';
+import { ISystemData } from '../../models/system-data.model';
 
 export default {
   data: new SlashCommandBuilder()
@@ -93,7 +94,7 @@ export default {
       const filteredFinal: Array<ISystemData> = [
         ...filteredStartsWith,
         ...filteredConcat,
-      ];
+      ].slice(0, 25);
 
       await interaction.respond(
         filteredFinal.map((choice) => ({

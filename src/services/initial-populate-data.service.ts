@@ -9,7 +9,13 @@ export async function populateGalnet() {
     const galnetArticles = (await gdocs.getGalnetArticles()) || [];
     console.info('Populate Service: Populating Galnet Articles');
     for (const item of galnetArticles) {
-      await db.addGalnetEntry(item.guid, item.title, item.content, item.date);
+      await db.addGalnetEntry(
+        item.guid,
+        item.title,
+        item.content,
+        item.date,
+        item.link,
+      );
     }
     console.info('Populate Service: Galnet population done');
   } else {

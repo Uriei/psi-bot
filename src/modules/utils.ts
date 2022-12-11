@@ -2,11 +2,12 @@ import { Item as RssItem } from 'rss-parser';
 import { EmbedBuilder, MessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { decode } from 'html-entities';
+import { IGalnetArticle } from './models/galnet.model';
 
 const DEFAULT_COLOR = 0xff8c0d;
 const ELITE_DEV_POST_ICON_URL = 'https://i.imgur.com/e1kHLpN.jpeg';
 
-export function prepareGalnetDiscordMessage(
+export function prepareRssGalnetDiscordMessage(
   galnetEntry: RssItem,
 ): MessageCreateOptions {
   if (
@@ -44,7 +45,43 @@ export function prepareGalnetDiscordMessage(
   return { embeds: [galnetEmbed] };
 }
 
-export function prepareEliteDevDiscordMessage(eliteDevPost: RssItem) {
+export function prepareDbGalnetDiscordMessage(
+  galnetEntry: IGalnetArticle,
+): MessageCreateOptions {
+  if (
+    !galnetEntry ||
+    !galnetEntry.content ||
+    !galnetEntry.title ||
+    !galnetEntry.guid ||
+    !galnetEntry.date
+  ) {
+    throw Error('Invalid Galnet DB Entry');
+  }
+  const mainContent = galnetEntry.content.replace(/(\r\n|\r|\n){2,}/g, '$1\n');
+  let content = '';
+  if (mainContent.length <= 4096) {
+    content = mainContent;
+  } else {
+    const etc = ' [...]';
+    content = mainContent.slice(0, 4096 - etc.length) + etc;
+  }
+
+  const galnetEmbed = new EmbedBuilder()
+    .setColor(0xff8c0d)
+    .setTitle(galnetEntry.title)
+    .setURL(galnetEntry.link)
+    .setAuthor({
+      name: 'Galnet News',
+      iconURL: 'https://i.imgur.com/lIgmINY.png',
+      url: 'https://community.elitedangerous.com/galnet',
+    })
+    .setDescription(content)
+    .setTimestamp(moment(galnetEntry.date).toDate());
+
+  return { embeds: [galnetEmbed] };
+}
+
+export function prepareRssEliteDevDiscordMessage(eliteDevPost: RssItem) {
   if (
     !eliteDevPost ||
     !eliteDevPost.content ||

@@ -1,5 +1,8 @@
 import * as mongoose from 'mongoose';
 import { upperCase as _upperCase } from 'lodash';
+import { ISystemData } from './models/system-data.model';
+import { IGalnetArticle } from './models/galnet.model';
+import { IDevPost } from './models/devpost.model';
 
 export class DB {
   private static instance: DB;
@@ -9,6 +12,7 @@ export class DB {
     title: String,
     content: String,
     date: Date,
+    link: String,
   });
   private galnetEntryModel = mongoose.model(
     'GalnetEntry',
@@ -124,24 +128,26 @@ export class DB {
     title: string,
     content: string,
     date: string,
+    link: string,
   ) {
     const newGalnetEntry = new this.galnetEntryModel({
       guid,
       title,
       content,
       date,
+      link,
     });
     return newGalnetEntry.save();
   }
 
   public async getGalnetAll() {
-    return this.galnetEntryModel.find().sort({
+    return this.galnetEntryModel.find<IGalnetArticle>().sort({
       date: 'ascending',
     });
   }
 
   public async findGalnetByGuid(guid: string) {
-    return this.galnetEntryModel.findOne({
+    return this.galnetEntryModel.findOne<IGalnetArticle>({
       guid,
     });
   }
@@ -164,13 +170,13 @@ export class DB {
   }
 
   public async getEliteDevPostAll() {
-    return this.eliteDevPostEntryModel.find().sort({
+    return this.eliteDevPostEntryModel.find<IDevPost>().sort({
       date: 'ascending',
     });
   }
 
   public async findEliteDevPostByGuid(guid: string) {
-    return this.eliteDevPostEntryModel.findOne({
+    return this.eliteDevPostEntryModel.findOne<IDevPost>({
       guid,
     });
   }
@@ -212,24 +218,4 @@ export class DB {
     }
     return;
   }
-}
-
-export interface ISystemData {
-  upperName: string;
-  systemName: string;
-  id: number;
-  id64: number;
-  x: number;
-  y: number;
-  z: number;
-  requirePermit: boolean;
-  permitName?: string;
-  allegiance?: string;
-  government?: string;
-  population?: number;
-  security?: string;
-  economy?: string;
-  secondEconomy?: string;
-  reserve?: string;
-  popularity: number;
 }

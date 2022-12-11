@@ -2,11 +2,11 @@ import { DB } from '../modules/database';
 import { Discord } from '../modules/discord/discord';
 import { Google } from '../modules/g-docs';
 import {
-  getGalnetFeed,
-  IGalnetRssItemGoneGeeky,
   IGalnetRssResponseGoneGeeky,
-} from '../modules/rss';
-import { prepareGalnetDiscordMessage } from '../modules/utils';
+  IGalnetRssItemGoneGeeky,
+} from '../modules/models/rss.model';
+import { getGalnetFeed } from '../modules/rss';
+import { prepareRssGalnetDiscordMessage } from '../modules/utils';
 
 export class GalnetService {
   private static instance: GalnetService;
@@ -109,11 +109,16 @@ export class GalnetService {
       if (!(await this.db.findGalnetByGuid(entry.guid))) {
         console.debug('Galnet Service: Adding new entry: ');
         console.debug(entry);
+        const date = new Date();
+        const entryDate = `${date.getFullYear()}/${
+          date.getMonth() + 1
+        }/${date.getDate()}`;
         await this.db.addGalnetEntry(
           entry.guid,
           entry.title,
           entry.contentSnippet,
-          entry.isoDate,
+          entryDate,
+          entry.link,
         );
         count++;
       }
@@ -136,6 +141,7 @@ export class GalnetService {
         entryDate,
         entry.title,
         entry.contentSnippet,
+        entry.link,
       );
     }
   }
@@ -144,7 +150,7 @@ export class GalnetService {
     newGalnetEntries: Array<IGalnetRssItemGoneGeeky>,
   ) {
     for (const entry of newGalnetEntries) {
-      const preparedDiscordMessage = prepareGalnetDiscordMessage(entry);
+      const preparedDiscordMessage = prepareRssGalnetDiscordMessage(entry);
       await this.discord?.sendGalnetPost(preparedDiscordMessage);
     }
   }
