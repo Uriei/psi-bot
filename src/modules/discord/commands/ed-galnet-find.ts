@@ -7,7 +7,11 @@ import {
   ChatInputCommandInteraction,
   InteractionReplyOptions,
   MessageCreateOptions,
+  ModalActionRowComponentBuilder,
+  ModalBuilder,
   SlashCommandBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } from 'discord.js';
 import { DB } from '../../database';
 import { upperCase as _upperCase } from 'lodash';
@@ -71,7 +75,7 @@ export default {
         }
 
         if ('string' === typeof reply) {
-          send = { content: reply };
+          send = { content: reply, ephemeral: true };
         } else {
           send = { ...reply, ephemeral: true } as InteractionReplyOptions;
         }
@@ -86,7 +90,10 @@ export default {
 
         try {
           if (articles.length <= 0) {
-            await interaction.reply('No articles found.');
+            await interaction.reply({
+              content: 'No articles found.',
+              ephemeral: true,
+            });
             return;
           } else {
             const galnetArticlesFormattedDiscord = articles.map((g) =>
@@ -118,6 +125,7 @@ export default {
                         [generateButtons(galnetIndex, articles.length)],
                       ),
                     );
+                    await c.update({});
                     break;
 
                   case 'galnet_previous':
@@ -128,6 +136,7 @@ export default {
                         [generateButtons(galnetIndex, articles.length)],
                       ),
                     );
+                    await c.update({});
                     break;
 
                   case 'galnet_next':
@@ -141,6 +150,7 @@ export default {
                         [generateButtons(galnetIndex, articles.length)],
                       ),
                     );
+                    await c.update({});
                     break;
 
                   case 'galnet_last':
@@ -151,12 +161,64 @@ export default {
                         [generateButtons(galnetIndex, articles.length)],
                       ),
                     );
+                    await c.update({});
+                    break;
+                  case 'galnet_page':
+                    var modalPageSelector = new TextInputBuilder()
+                      .setCustomId('galnet_modal_page_input')
+                      .setLabel(`Select page: (Max: ${articles.length})`)
+                      .setStyle(TextInputStyle.Short);
+                    var modal = new ModalBuilder()
+                      .setCustomId(`galnet_modal_page`)
+                      .setTitle(`Galnet Find`);
+
+                    modal.addComponents(
+                      new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+                        modalPageSelector,
+                      ),
+                    );
+
+                    await c.showModal(modal);
+                    var modalSubmitted = await c
+                      .awaitModalSubmit({
+                        time: 60000,
+                        filter: (i) => i.user.id === c.user.id,
+                      })
+                      .catch((error) => {
+                        console.error(error);
+                        return null;
+                      });
+                    var newPage = 0;
+                    if (modalSubmitted) {
+                      newPage =
+                        Number(
+                          modalSubmitted.fields.getTextInputValue(
+                            'galnet_modal_page_input',
+                          ),
+                        ) - 1;
+                      await modalSubmitted.deferReply({ ephemeral: true });
+                      await modalSubmitted.deleteReply();
+                    }
+
+                    if (newPage < 0) {
+                      galnetIndex = 0;
+                    } else if (newPage > articles.length - 1) {
+                      galnetIndex = articles.length - 1;
+                    } else {
+                      galnetIndex = newPage;
+                    }
+                    await interaction.editReply(
+                      generateReply(
+                        galnetArticlesFormattedDiscord[galnetIndex],
+                        [generateButtons(galnetIndex, articles.length)],
+                      ),
+                    );
                     break;
 
                   default:
+                    await c.update({});
                     break;
                 }
-                await c.update({});
               })
               .on('end', async () => {
                 console.debug('Galnet by-text collector ended.');
@@ -169,9 +231,10 @@ export default {
               });
           }
         } catch (error) {
-          await interaction.reply(
-            'There was an error while trying to find the article.',
-          );
+          await interaction.reply({
+            content: 'There was an error while trying to find the article.',
+            ephemeral: true,
+          });
         }
       }
     },
