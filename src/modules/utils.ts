@@ -69,7 +69,7 @@ export function prepareDbGalnetDiscordMessage(
   const galnetEmbed = new EmbedBuilder()
     .setColor(0xff8c0d)
     .setTitle(galnetEntry.title)
-    .setURL(galnetEntry.link)
+
     .setAuthor({
       name: 'Galnet News',
       iconURL: 'https://i.imgur.com/lIgmINY.png',
@@ -77,6 +77,24 @@ export function prepareDbGalnetDiscordMessage(
     })
     .setDescription(content)
     .setTimestamp(moment(galnetEntry.date).toDate());
+
+  // TODO Temporary until I get proper urls for really old articles
+  if (
+    galnetEntry.link &&
+    /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@%_+.~#?&/=]*)$/g.test(
+      galnetEntry.link,
+    )
+  ) {
+    galnetEmbed.setURL(galnetEntry.link);
+  } else if (
+    !galnetEntry.link &&
+    !/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@%_+.~#?&/=]*)$/g.test(
+      galnetEntry.guid,
+    )
+  ) {
+    const link = `https://community.elitedangerous.com/en/galnet/uid/${galnetEntry.guid}`;
+    galnetEmbed.setURL(link);
+  }
 
   return { embeds: [galnetEmbed] };
 }
