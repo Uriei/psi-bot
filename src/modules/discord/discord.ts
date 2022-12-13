@@ -34,6 +34,7 @@ class Discord {
   private galnetChannelID: string = '';
   private eliteDevPostsChannelID: string = '';
   private twitterDevPostsChannelID: string = '';
+  private communityGoalChannelID: string = '';
 
   private constructor() {
     this.getCredentialInfo();
@@ -149,13 +150,7 @@ class Discord {
   }
 
   private getCredentialInfo() {
-    if (
-      process.env.DISCORD_BOT_TOKEN &&
-      process.env.DISCORD_CLIENT_ID &&
-      (process.env.DISCORD_GALNET_CHANNEL_ID ||
-        process.env.DISCORD_ELITEDEV_CHANNEL_ID) &&
-      process.env.DISCORD_TWITTERDEV_CHANNEL_ID
-    ) {
+    if (process.env.DISCORD_BOT_TOKEN && process.env.DISCORD_CLIENT_ID) {
       console.info('Discord credentials found on Environment.');
       this.botToken = process.env.DISCORD_BOT_TOKEN || '';
       this.botClientId = process.env.DISCORD_CLIENT_ID || '';
@@ -164,6 +159,8 @@ class Discord {
         process.env.DISCORD_ELITEDEV_CHANNEL_ID || '';
       this.twitterDevPostsChannelID =
         process.env.DISCORD_TWITTERDEV_CHANNEL_ID || '';
+      this.communityGoalChannelID =
+        process.env.DISCORD_COMMUNITYGOAL_CHANNEL_ID || '';
     } else {
       console.error('Discord credentials not found on Environment.');
       process.exit(1);
@@ -222,6 +219,7 @@ class Discord {
   }
 
   async sendGalnetPost(entry: MessagePayload | MessageCreateOptions) {
+    if (!this.galnetChannelID) return null;
     if (!entry) {
       return Promise.reject(`ERROR: Send Galnet - No valid entry`);
     }
@@ -250,6 +248,7 @@ class Discord {
   }
 
   async sendEliteDevPost(entry: MessagePayload | MessageCreateOptions) {
+    if (!this.eliteDevPostsChannelID) return null;
     if (!entry) {
       return Promise.reject(`ERROR: Send EliteDevPost - No valid entry`);
     }
@@ -278,6 +277,7 @@ class Discord {
   }
 
   async sendTwitterDevPost(tweet: TweetV2) {
+    if (!this.twitterDevPostsChannelID) return null;
     if (!tweet) {
       return Promise.reject(`ERROR: Send TwitterDevPost - No valid Tweet`);
     }
@@ -308,6 +308,69 @@ class Discord {
       });
     } else {
       return Promise.reject(`ERROR: Send TwitterDevPost - Client not ready`);
+    }
+  }
+
+  async createCG(communityGoal: MessageCreateOptions) {
+    if (!this.communityGoalChannelID) return null;
+
+    if (!communityGoal) {
+      return Promise.reject(`ERROR: Send CG - No valid entry`);
+    }
+
+    const channel = (await this.client.channels.fetch(
+      this.communityGoalChannelID,
+    )) as Channel;
+    if (!channel || !channel.isTextBased()) {
+      return Promise.reject(`ERROR: Send CG - No channel found`);
+    }
+
+    if (!this.client.isReady()) {
+      await this.login().then().catch();
+    }
+
+    if (this.client.isReady()) {
+      return channel.send(communityGoal).then((res) => {
+        if (res.crosspostable) {
+          res.crosspost().then(() => {});
+        }
+        return Promise.resolve(res);
+      });
+    } else {
+      return Promise.reject(`ERROR: Send CG - Client not ready`);
+    }
+  }
+
+  async updateCG(messageId: string, communityGoal: MessageCreateOptions) {
+    if (!this.communityGoalChannelID || !messageId) return null;
+
+    if (!communityGoal) {
+      return Promise.reject(`ERROR: Send CG - No valid entry`);
+    }
+
+    const message = await this.client.channels
+      .fetch(this.communityGoalChannelID)
+      .then(
+        async (c) => c?.isTextBased() && (await c.messages.fetch(messageId)),
+      );
+
+    if (message && message.editable) {
+      if (!this.client.isReady()) {
+        await this.login().then().catch();
+      }
+
+      if (this.client.isReady()) {
+        return await message.edit(communityGoal).then((res) => {
+          if (res.crosspostable) {
+            res.crosspost().then(() => {});
+          }
+          return Promise.resolve(res);
+        });
+      } else {
+        return Promise.reject(`ERROR: Send CG - Client not ready`);
+      }
+    } else {
+      return Promise.reject(`ERROR: Update CG - No channel or message found`);
     }
   }
 }

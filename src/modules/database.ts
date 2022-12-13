@@ -3,6 +3,10 @@ import { upperCase as _upperCase } from 'lodash';
 import { ISystemData } from './models/system-data.model';
 import { IGalnetArticle } from './models/galnet.model';
 import { IDevPost } from './models/devpost.model';
+import {
+  ICommunityGoalDB,
+  ICommunityGoalMessageDB,
+} from './models/community-goals.model';
 
 export class DB {
   private static instance: DB;
@@ -57,6 +61,30 @@ export class DB {
     popularity: Number,
   });
   private edSystemModel = mongoose.model('EdSystem', this.edSystemSchema);
+
+  private communityGoalSchema = new mongoose.Schema({
+    id: String,
+    title: String,
+    expiry: Date,
+    market_name: String,
+    starsystem_name: String,
+    activityType: String,
+    target_commodity_list: [String],
+    target_qty: Number,
+    qty: Number,
+    objective: String,
+    images: String,
+    bulletin: String,
+  });
+  private communityGoalMessageSchema = new mongoose.Schema({
+    communityGoalId: String,
+    messageId: String,
+    communityGoal: this.communityGoalSchema,
+  });
+  private communityGoalMessageModel = mongoose.model(
+    'CommunityGoalMessage',
+    this.communityGoalMessageSchema,
+  );
 
   private constructor() {}
 
@@ -217,5 +245,54 @@ export class DB {
       return await system.save();
     }
     return;
+  }
+
+  public async addCommunityGoalMessage(
+    messageId: string,
+    communityGoal: ICommunityGoalDB,
+  ) {
+    const cg = new this.communityGoalMessageModel({
+      communityGoalId: communityGoal.id,
+      messageId,
+      communityGoal,
+    });
+    return await cg.save();
+  }
+
+  public async getCommunityGoalMessageAll() {
+    const result = await this.communityGoalMessageModel
+      .find<ICommunityGoalMessageDB>()
+      .sort({
+        communityGoalId: 'ascending',
+      });
+
+    return result;
+  }
+  public async findCommunityGoalMessageByMessage(messageId: number) {
+    const result =
+      await this.communityGoalMessageModel.findOne<ICommunityGoalMessageDB>({
+        messageId,
+      });
+
+    return result;
+  }
+
+  public async findCommunityGoalMessageByCgId(communityGoalId: string) {
+    const result =
+      await this.communityGoalMessageModel.findOne<ICommunityGoalMessageDB>({
+        communityGoalId,
+      });
+
+    return result;
+  }
+  public async updateCommunityGoalMessage(communityGoal: ICommunityGoalDB) {
+    const result = await this.communityGoalMessageModel.findOne({
+      communityGoalId: communityGoal.id,
+    });
+    if (result) {
+      result.communityGoal = communityGoal;
+      return await result.save();
+    }
+    return null;
   }
 }

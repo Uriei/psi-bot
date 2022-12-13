@@ -1,8 +1,10 @@
 import { Item as RssItem } from 'rss-parser';
-import { EmbedBuilder, MessageCreateOptions } from 'discord.js';
+import { APIEmbed, EmbedBuilder, MessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { decode } from 'html-entities';
 import { IGalnetArticle } from './models/galnet.model';
+import { ICommunityGoalDB } from './models/community-goals.model';
+import { get as _get } from 'lodash';
 
 const DEFAULT_COLOR = 0xff8c0d;
 const ELITE_DEV_POST_ICON_URL = 'https://i.imgur.com/e1kHLpN.jpeg';
@@ -139,6 +141,74 @@ export function prepareRssEliteDevDiscordMessage(eliteDevPost: RssItem) {
   return { embeds: [eliteDevPostEmbed] };
 }
 
+export function prepareCGDiscordMessage(
+  communityGoal: ICommunityGoalDB,
+): MessageCreateOptions {
+  const embed: APIEmbed = {
+    title: communityGoal.title,
+    description: communityGoal.bulletin,
+    color: 0x00ffff,
+    fields: [
+      {
+        name: `Solar System`,
+        value: communityGoal.starsystem_name,
+        inline: true,
+      },
+      {
+        name: `Station`,
+        value: communityGoal.market_name,
+        inline: true,
+      },
+      {
+        name: `Activity`,
+        value: mapCgActivity(communityGoal.activityType),
+        inline: true,
+      },
+      {
+        name: `Commodities`,
+        value: communityGoal.target_commodity_list.join(', '),
+        inline: false,
+      },
+      {
+        name: `Time Left`,
+        value: calculateTimeLeft(communityGoal.expiry),
+        inline: true,
+      },
+      {
+        name: `Expires`,
+        value: `<t:${moment(communityGoal.expiry).unix()}:F>`,
+        inline: true,
+      },
+      {
+        name: `\b`,
+        value: `\b`,
+        inline: true,
+      },
+      {
+        name: `Quantity Delivered`,
+        value: communityGoal.qty.toLocaleString('en'),
+        inline: true,
+      },
+      {
+        name: `Quantity Requested`,
+        value: communityGoal.target_qty.toLocaleString('en'),
+        inline: true,
+      },
+      {
+        name: `\b`,
+        value: `\b`,
+        inline: true,
+      },
+      {
+        name: cgProgressBar(communityGoal),
+        value: `\b`,
+        inline: false,
+      },
+    ],
+  };
+  return { embeds: [embed] };
+}
+
 export function checkIsJestTest() {
   if (process.env.JEST_WORKER_ID !== undefined) {
     console.debug('WE ARE IN A JEST TEST!');
@@ -240,4 +310,63 @@ function cleanContentHTMLFormat(input: string) {
   output = output.replace(/(<blockquote>|<\/blockquote>)/gi, '');
 
   return output;
+}
+function calculateTimeLeft(expiry: Date) {
+  const MINUTE = 60;
+  const HOUR = MINUTE * 60;
+  const DAY = HOUR * 24;
+  const WEEK = DAY * 7;
+
+  const now = moment();
+  let left = moment(expiry).unix() - now.unix();
+
+  let leftString = '';
+
+  if (left / WEEK > 0) {
+    const weeks = Math.trunc(left / WEEK);
+    left -= weeks * WEEK;
+    leftString += `${leftString ? ' ' : ''}${weeks}W`;
+  }
+
+  if (left / DAY > 0) {
+    const hours = Math.trunc(left / DAY);
+    left -= hours * DAY;
+    leftString += `${leftString ? ' ' : ''}${hours}D`;
+  }
+
+  if (left / HOUR > 0) {
+    const hours = Math.trunc(left / HOUR);
+    left -= hours * HOUR;
+    leftString += `${leftString ? ' ' : ''}${hours}H`;
+  }
+
+  if (left / MINUTE > 0) {
+    const minutes = Math.trunc(left / MINUTE);
+    left -= minutes * MINUTE;
+    leftString += `${leftString ? ' ' : ''}${minutes}M`;
+  }
+
+  return leftString;
+}
+function mapCgActivity(activityType: string): string {
+  const activities = {
+    tradelist: 'Trade',
+  };
+  return _get(activities, [activityType], '*Unavailable*');
+}
+function cgProgressBar(communityGoal: ICommunityGoalDB): string {
+  const CHAR_EMPTY = '⬜';
+  const CHAR_FULL = '🟩';
+  const MAX_LENGTH = 20;
+  let result = '';
+
+  const max = communityGoal.target_qty;
+  const current = communityGoal.qty;
+  const percent = (current * MAX_LENGTH) / max;
+
+  for (let index = 0; index < MAX_LENGTH; index++) {
+    result += index < percent ? CHAR_FULL : CHAR_EMPTY;
+  }
+
+  return result;
 }

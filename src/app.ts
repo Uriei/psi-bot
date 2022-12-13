@@ -10,11 +10,13 @@ import {
 import { GalnetService } from './services/rss-galnet.service';
 import { DevPostsService } from './services/rss-devposts.service';
 import { TwitterService } from './services/twitter.service';
+import { CommunityGoalsService } from './services/community-goals.service';
 
 let discord: Discord;
 let galnetService: GalnetService;
 let devPostsService: DevPostsService;
 let twitterService: TwitterService;
+let communityGoalsService: CommunityGoalsService;
 
 async function app() {
   discord = await Discord.getInstance();
@@ -31,6 +33,9 @@ async function app() {
 
   twitterService = await TwitterService.getInstance();
   twitterService.start();
+
+  communityGoalsService = await CommunityGoalsService.getInstance();
+  communityGoalsService.start();
 }
 
 async function shutdown() {
@@ -42,6 +47,7 @@ async function shutdown() {
   clearTimeout(galnetService.timeoutCallback);
   clearTimeout(devPostsService.timeoutCallback);
   clearTimeout(twitterService.timeoutCallback);
+  clearTimeout(communityGoalsService.timeoutCallback);
 
   console.info('PSI Bot offline.');
   process.exit(0);
