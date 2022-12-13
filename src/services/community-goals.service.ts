@@ -100,12 +100,14 @@ export class CommunityGoalsService {
       try {
         const message = await this.db?.findCommunityGoalMessageByCgId(cg.id);
         if (message) {
-          await this.discord?.updateCG(
-            message.messageId,
-            prepareCGDiscordMessage(cg),
-          );
-          await this.db?.updateCommunityGoalMessage(cg);
-        } else {
+          if (!message.ended) {
+            await this.discord?.updateCG(
+              message.messageId,
+              prepareCGDiscordMessage(cg),
+            );
+            await this.db?.updateCommunityGoalMessage(cg);
+          }
+        } else if (!message) {
           const newMessageId = await this.discord?.createCG(
             prepareCGDiscordMessage(cg),
           );

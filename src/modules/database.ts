@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+mongoose.set('strictQuery', false);
 import { upperCase as _upperCase } from 'lodash';
 import { ISystemData } from './models/system-data.model';
 import { IGalnetArticle } from './models/galnet.model';
@@ -7,6 +8,7 @@ import {
   ICommunityGoalDB,
   ICommunityGoalMessageDB,
 } from './models/community-goals.model';
+import { isEndedCG } from './utils';
 
 export class DB {
   private static instance: DB;
@@ -80,6 +82,7 @@ export class DB {
     communityGoalId: String,
     messageId: String,
     communityGoal: this.communityGoalSchema,
+    ended: Boolean,
   });
   private communityGoalMessageModel = mongoose.model(
     'CommunityGoalMessage',
@@ -255,6 +258,7 @@ export class DB {
       communityGoalId: communityGoal.id,
       messageId,
       communityGoal,
+      ended: isEndedCG(communityGoal),
     });
     return await cg.save();
   }
@@ -291,6 +295,7 @@ export class DB {
     });
     if (result) {
       result.communityGoal = communityGoal;
+      result.ended = isEndedCG(communityGoal);
       return await result.save();
     }
     return null;

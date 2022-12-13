@@ -38,4 +38,5 @@ export interface ICommunityGoalMessageDB {
   communityGoalId: string;
   messageId: string;
   communityGoal: ICommunityGoalDB;
+  ended: boolean;
 }

@@ -147,7 +147,7 @@ export function prepareCGDiscordMessage(
   const embed: APIEmbed = {
     title: communityGoal.title,
     description: communityGoal.bulletin,
-    color: 0x00ffff,
+    color: isEndedCG(communityGoal) ? 0xff0000 : 0x00ff00,
     fields: [
       {
         name: `Solar System`,
@@ -165,18 +165,26 @@ export function prepareCGDiscordMessage(
         inline: true,
       },
       {
-        name: `Commodities`,
-        value: communityGoal.target_commodity_list.join(', '),
+        name:
+          communityGoal.target_commodity_list.length > 0 ? `Commodities` : `\b`,
+        value:
+          communityGoal.target_commodity_list.length > 0
+            ? communityGoal.target_commodity_list.join(', ')
+            : `\b`,
         inline: false,
       },
       {
         name: `Time Left`,
-        value: calculateTimeLeft(communityGoal.expiry),
+        value: isEndedCG(communityGoal)
+          ? 'GOAL REACHED'
+          : calculateTimeLeft(communityGoal.expiry),
         inline: true,
       },
       {
         name: `Expires`,
-        value: `<t:${moment(communityGoal.expiry).unix()}:F>`,
+        value: isEndedCG(communityGoal)
+          ? 'GOAL REACHED'
+          : `<t:${moment(communityGoal.expiry).unix()}:F>`,
         inline: true,
       },
       {
@@ -185,13 +193,17 @@ export function prepareCGDiscordMessage(
         inline: true,
       },
       {
-        name: `Quantity Delivered`,
-        value: communityGoal.qty.toLocaleString('en'),
+        name: communityGoal.qty ? `Quantity Delivered` : `\b`,
+        value: communityGoal.qty
+          ? communityGoal.qty.toLocaleString('en')
+          : `\b`,
         inline: true,
       },
       {
-        name: `Quantity Requested`,
-        value: communityGoal.target_qty.toLocaleString('en'),
+        name: communityGoal.target_qty ? `Quantity Requested` : `\b`,
+        value: communityGoal.target_qty
+          ? communityGoal.target_qty.toLocaleString('en')
+          : `\b`,
         inline: true,
       },
       {
@@ -352,7 +364,7 @@ function mapCgActivity(activityType: string): string {
   const activities = {
     tradelist: 'Trade',
   };
-  return _get(activities, [activityType], '*Unavailable*');
+  return _get(activities, [activityType], activityType);
 }
 function cgProgressBar(communityGoal: ICommunityGoalDB): string {
   const CHAR_EMPTY = '⬜';
@@ -360,13 +372,22 @@ function cgProgressBar(communityGoal: ICommunityGoalDB): string {
   const MAX_LENGTH = 20;
   let result = '';
 
-  const max = communityGoal.target_qty;
-  const current = communityGoal.qty;
-  const percent = (current * MAX_LENGTH) / max;
+  if (communityGoal.target_qty && communityGoal.qty) {
+    const max = communityGoal.target_qty;
+    const current = communityGoal.qty;
+    const percent = (current * MAX_LENGTH) / max;
 
-  for (let index = 0; index < MAX_LENGTH; index++) {
-    result += index < percent ? CHAR_FULL : CHAR_EMPTY;
+    for (let index = 0; index < MAX_LENGTH; index++) {
+      result += index < percent ? CHAR_FULL : CHAR_EMPTY;
+    }
+  } else {
+    result = '\b';
   }
 
   return result;
+}
+export function isEndedCG(communityGoal: ICommunityGoalDB): boolean {
+  return communityGoal.qty && communityGoal.target_qty
+    ? communityGoal.qty >= communityGoal.target_qty
+    : false || communityGoal.expiry.getTime() <= Date.now();
 }
