@@ -5,6 +5,7 @@ import { decode } from 'html-entities';
 import { IGalnetArticle } from './models/galnet.model';
 import { ICommunityGoalDB } from './models/community-goals.model';
 import { get as _get } from 'lodash';
+import { CommunityGoalsService } from '../services/community-goals.service';
 
 const DEFAULT_COLOR = 0xff8c0d;
 const ELITE_DEV_POST_ICON_URL = 'https://i.imgur.com/e1kHLpN.jpeg';
@@ -218,6 +219,14 @@ export function prepareCGDiscordMessage(
       },
     ],
   };
+
+  if (!isEndedCG(communityGoal)) {
+    embed.fields?.push({
+      name: `Next update`,
+      value: getNextUpdate(CommunityGoalsService.interval),
+      inline: false,
+    });
+  }
   return { embeds: [embed] };
 }
 
@@ -390,4 +399,8 @@ export function isEndedCG(communityGoal: ICommunityGoalDB): boolean {
   return communityGoal.qty && communityGoal.target_qty
     ? communityGoal.qty >= communityGoal.target_qty
     : false || communityGoal.expiry.getTime() <= Date.now();
+}
+function getNextUpdate(interval: number): string {
+  const nextUpdate = moment().add(interval, 'milliseconds');
+  return `<t:${nextUpdate.unix()}:R>`;
 }

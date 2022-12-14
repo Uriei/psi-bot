@@ -14,7 +14,16 @@ const communityGoalsFeedURL =
 
 export class CommunityGoalsService {
   private static instance: CommunityGoalsService;
-  private interval = -1;
+  private _interval = -1;
+  public static get interval() {
+    return CommunityGoalsService.instance._interval;
+  }
+  public get interval() {
+    return this._interval;
+  }
+  private set interval(value) {
+    this._interval = value;
+  }
   private static _timeoutCallback: NodeJS.Timeout;
   public get timeoutCallback(): NodeJS.Timeout {
     return CommunityGoalsService._timeoutCallback;
