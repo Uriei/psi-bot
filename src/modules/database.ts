@@ -162,7 +162,7 @@ export class DB {
     link: string,
   ) {
     const newGalnetEntry = new this.galnetEntryModel({
-      guid,
+      guid: guid.substring(guid.lastIndexOf('/') + 1),
       title,
       content,
       date,
@@ -172,15 +172,26 @@ export class DB {
   }
 
   public async getGalnetAll() {
-    return this.galnetEntryModel.find<IGalnetArticle>().sort({
+    return await this.galnetEntryModel.find<IGalnetArticle>().sort({
       date: 'ascending',
     });
   }
 
   public async findGalnetByGuid(guid: string) {
-    return this.galnetEntryModel.findOne<IGalnetArticle>({
-      guid,
+    return await this.galnetEntryModel.findOne<IGalnetArticle>({
+      guid: guid.substring(guid.lastIndexOf('/') + 1),
     });
+  }
+
+  public async findGalnetByGuidOrTitle(guid: string, title: string) {
+    const result =
+      (await this.galnetEntryModel.findOne<IGalnetArticle>({
+        guid: guid.substring(guid.lastIndexOf('/') + 1),
+      })) ||
+      (await this.galnetEntryModel.findOne<IGalnetArticle>({
+        title,
+      }));
+    return result;
   }
 
   public addEliteDevPostEntry(
@@ -201,13 +212,13 @@ export class DB {
   }
 
   public async getEliteDevPostAll() {
-    return this.eliteDevPostEntryModel.find<IDevPost>().sort({
+    return await this.eliteDevPostEntryModel.find<IDevPost>().sort({
       date: 'ascending',
     });
   }
 
   public async findEliteDevPostByGuid(guid: string) {
-    return this.eliteDevPostEntryModel.findOne<IDevPost>({
+    return await this.eliteDevPostEntryModel.findOne<IDevPost>({
       guid,
     });
   }
@@ -220,19 +231,15 @@ export class DB {
   }
 
   public async findEdSystemByName(systemName: string) {
-    const result = await this.edSystemModel.findOne<ISystemData>({
+    return await this.edSystemModel.findOne<ISystemData>({
       upperName: _upperCase(systemName),
     });
-
-    return result;
   }
 
   public async getEdSystemsAll() {
-    const result = await this.edSystemModel.find<ISystemData>().sort({
+    return await this.edSystemModel.find<ISystemData>().sort({
       popularity: 'descending',
     });
-
-    return result;
   }
 
   public async addEdSystemPopularity(systemName: string) {
@@ -264,30 +271,26 @@ export class DB {
   }
 
   public async getCommunityGoalMessageAll() {
-    const result = await this.communityGoalMessageModel
+    return await this.communityGoalMessageModel
       .find<ICommunityGoalMessageDB>()
       .sort({
         communityGoalId: 'ascending',
       });
-
-    return result;
   }
   public async findCommunityGoalMessageByMessage(messageId: number) {
-    const result =
-      await this.communityGoalMessageModel.findOne<ICommunityGoalMessageDB>({
+    return await this.communityGoalMessageModel.findOne<ICommunityGoalMessageDB>(
+      {
         messageId,
-      });
-
-    return result;
+      },
+    );
   }
 
   public async findCommunityGoalMessageByCgId(communityGoalId: string) {
-    const result =
-      await this.communityGoalMessageModel.findOne<ICommunityGoalMessageDB>({
+    return await this.communityGoalMessageModel.findOne<ICommunityGoalMessageDB>(
+      {
         communityGoalId,
-      });
-
-    return result;
+      },
+    );
   }
   public async updateCommunityGoalMessage(communityGoal: ICommunityGoalDB) {
     const result = await this.communityGoalMessageModel.findOne({

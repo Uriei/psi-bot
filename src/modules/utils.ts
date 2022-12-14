@@ -6,12 +6,13 @@ import { IGalnetArticle } from './models/galnet.model';
 import { ICommunityGoalDB } from './models/community-goals.model';
 import { get as _get } from 'lodash';
 import { CommunityGoalsService } from '../services/community-goals.service';
+import { IGalnetRssItemFrontier } from './models/rss.model';
 
 const DEFAULT_COLOR = 0xff8c0d;
 const ELITE_DEV_POST_ICON_URL = 'https://i.imgur.com/e1kHLpN.jpeg';
 
 export function prepareRssGalnetDiscordMessage(
-  galnetEntry: RssItem,
+  galnetEntry: IGalnetRssItemFrontier,
 ): MessageCreateOptions {
   if (
     !galnetEntry ||
@@ -21,16 +22,12 @@ export function prepareRssGalnetDiscordMessage(
   ) {
     throw Error('Invalid Galnet RSS Entry');
   }
-  const mainContent = galnetEntry.contentSnippet.replace(
-    /(\r\n|\r|\n){2,}/g,
-    '$1\n',
-  );
   let content = '';
-  if (mainContent.length <= 4096) {
-    content = mainContent;
+  if (galnetEntry.contentSnippet.length <= 4096) {
+    content = galnetEntry.contentSnippet;
   } else {
     const etc = ' [...]';
-    content = mainContent.slice(0, 4096 - etc.length) + etc;
+    content = galnetEntry.contentSnippet.slice(0, 4096 - etc.length) + etc;
   }
 
   const galnetEmbed = new EmbedBuilder()
@@ -43,7 +40,7 @@ export function prepareRssGalnetDiscordMessage(
       url: 'https://community.elitedangerous.com/galnet',
     })
     .setDescription(content)
-    .setTimestamp();
+    .setTimestamp(moment(galnetEntry.isoDate).toDate());
 
   return { embeds: [galnetEmbed] };
 }
@@ -60,13 +57,12 @@ export function prepareDbGalnetDiscordMessage(
   ) {
     throw Error('Invalid Galnet DB Entry');
   }
-  const mainContent = galnetEntry.content.replace(/(\r\n|\r|\n){2,}/g, '$1\n');
   let content = '';
-  if (mainContent.length <= 4096) {
-    content = mainContent;
+  if (galnetEntry.content.length <= 4096) {
+    content = galnetEntry.content;
   } else {
     const etc = ' [...]';
-    content = mainContent.slice(0, 4096 - etc.length) + etc;
+    content = galnetEntry.content.slice(0, 4096 - etc.length) + etc;
   }
 
   const galnetEmbed = new EmbedBuilder()
