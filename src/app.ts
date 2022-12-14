@@ -41,7 +41,7 @@ async function app() {
 async function shutdown() {
   console.info('Closing PSI Bot.');
   discord.setPresence('SHUTDOWN');
-  // TODO Stop all timeout intervals
+  // Stop all timeout intervals
   discord.disconnect();
   clearInterval(discord.discordKeepAliveInterval);
   clearTimeout(galnetService.timeoutCallback);

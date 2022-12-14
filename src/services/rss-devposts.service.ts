@@ -1,5 +1,3 @@
-// TODO Remember that dates in unix need 000 at the end for mongodb
-
 import { DB } from '../modules/database';
 import { Discord } from '../modules/discord/discord';
 import { Google } from '../modules/g-docs';
