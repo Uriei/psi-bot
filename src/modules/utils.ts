@@ -386,7 +386,7 @@ function cgProgressBar(communityGoal: ICommunityGoalDB): string {
     const current = communityGoal.qty;
     const percent = (current * MAX_LENGTH) / max;
 
-    for (let index = 0; index < MAX_LENGTH; index++) {
+    for (let index = 1; index <= MAX_LENGTH; index++) {
       result += index < percent ? CHAR_FULL : CHAR_EMPTY;
     }
   } else {

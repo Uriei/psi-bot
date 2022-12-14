@@ -27,7 +27,7 @@ export class TwitterService {
     }
   }
 
-  public async start(interval: number = 60000) {
+  public async start(interval: number = 120000) {
     if (interval < 60000) {
       console.error("Interval can't be lower than 60000ms, 1 minute.");
     } else {
