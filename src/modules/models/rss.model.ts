@@ -16,6 +16,30 @@ export interface IGalnetRssResponseGoneGeeky {
   description: string;
 }
 
+export interface IGalnetRssItemFrontier {
+  guid: string;
+  title: string;
+  content: string;
+  contentSnippet: string;
+  pubDate: string;
+  link: string;
+  enclosure: {
+    length: string;
+    type: string;
+    url: string;
+  };
+  isoDate: string;
+}
+export interface IGalnetRssResponseFrontier {
+  title: string;
+  description: string;
+  items: Array<IGalnetRssItemFrontier>;
+  generator: string;
+  lastBuildDate: string;
+  docs: string;
+  link: string;
+}
+
 export interface IDevPostsRssItem {
   guid: string;
   title: string;

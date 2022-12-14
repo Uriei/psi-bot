@@ -1,11 +1,12 @@
+import moment from 'moment';
 import { DB } from '../modules/database';
 import { Discord } from '../modules/discord/discord';
 import { Google } from '../modules/g-docs';
 import {
-  IGalnetRssResponseGoneGeeky,
-  IGalnetRssItemGoneGeeky,
+  IGalnetRssResponseFrontier,
+  IGalnetRssItemFrontier,
 } from '../modules/models/rss.model';
-import { getGalnetFeed } from '../modules/rss';
+import { getGalnetNewFeed } from '../modules/rss';
 import { prepareRssGalnetDiscordMessage } from '../modules/utils';
 
 export class GalnetService {
@@ -77,20 +78,20 @@ export class GalnetService {
   }
 
   private async getLatestGalnetArticles() {
-    const galnetRss = await getGalnetFeed();
+    const galnetRss = await getGalnetNewFeed();
     return Promise.resolve(galnetRss);
   }
 
   private async findNewGalnetArticles(
-    latestGalnetRssResponse: IGalnetRssResponseGoneGeeky,
+    latestGalnetRssResponse: IGalnetRssResponseFrontier,
   ) {
     if (!this.db) {
       throw Error('Galnet Service: Database not detected.');
     }
 
-    let newEntries: Array<IGalnetRssItemGoneGeeky> = [];
+    let newEntries: Array<IGalnetRssItemFrontier> = [];
     for (const item of latestGalnetRssResponse.items) {
-      if (!(await this.db?.findGalnetByGuid(item.guid))) {
+      if (!(await this.db?.findGalnetByGuidOrTitle(item.guid, item.title))) {
         newEntries.push(item);
       }
     }
@@ -99,46 +100,45 @@ export class GalnetService {
   }
 
   private async addNewGalnetEntries(
-    newGalnetEntries: Array<IGalnetRssItemGoneGeeky>,
+    newGalnetEntries: Array<IGalnetRssItemFrontier>,
   ) {
     if (!this.db) {
       throw Error('Galnet Service: Database not detected.');
     }
     let count = 0;
     for (const entry of newGalnetEntries) {
-      if (!(await this.db.findGalnetByGuid(entry.guid))) {
-        console.debug('Galnet Service: Adding new entry: ');
-        console.debug(entry);
-        const date = new Date();
-        const entryDate = `${date.getFullYear()}/${
-          date.getMonth() + 1
-        }/${date.getDate()}`;
-        await this.db.addGalnetEntry(
-          entry.guid,
-          entry.title,
-          entry.contentSnippet,
-          entryDate,
-          entry.link,
-        );
-        count++;
-      }
-      await this.addNewGalnetEntriesToGoogle(newGalnetEntries);
-      await this.sendNewGalnetEntriesToDiscord(newGalnetEntries);
+      const entryDate = moment(entry.isoDate);
+      entry.isoDate = entryDate.isAfter(moment().add(1, 'day'))
+        ? entryDate.subtract(1286, 'years').toISOString()
+        : entryDate.toISOString();
+
+      entry.contentSnippet = entry.contentSnippet
+        .replace(/(\r\n|\r|\n){1,}/g, '\n\n')
+        .replace(/(\r\n|\r|\n){2,}/g, '$1\n');
+
+      console.debug('Galnet Service: Adding new entry: ');
+      console.debug(entry);
+      await this.db.addGalnetEntry(
+        entry.guid,
+        entry.title,
+        entry.contentSnippet,
+        entry.isoDate,
+        entry.link,
+      );
+      count++;
     }
+    await this.addNewGalnetEntriesToGoogle(newGalnetEntries);
+    await this.sendNewGalnetEntriesToDiscord(newGalnetEntries);
     return count;
   }
 
   private async addNewGalnetEntriesToGoogle(
-    newGalnetEntries: Array<IGalnetRssItemGoneGeeky>,
+    newGalnetEntries: Array<IGalnetRssItemFrontier>,
   ) {
     for (const entry of newGalnetEntries) {
-      const date = new Date();
-      const entryDate = `${date.getFullYear()}/${
-        date.getMonth() + 1
-      }/${date.getDate()}`;
       await this.gdoc?.addNewGalnetEntry(
         entry.guid,
-        entryDate,
+        moment(entry.isoDate).format('YYYY/MM/DD'),
         entry.title,
         entry.contentSnippet,
         entry.link,
@@ -147,7 +147,7 @@ export class GalnetService {
   }
 
   private async sendNewGalnetEntriesToDiscord(
-    newGalnetEntries: Array<IGalnetRssItemGoneGeeky>,
+    newGalnetEntries: Array<IGalnetRssItemFrontier>,
   ) {
     for (const entry of newGalnetEntries) {
       const preparedDiscordMessage = prepareRssGalnetDiscordMessage(entry);
