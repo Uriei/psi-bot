@@ -9,9 +9,12 @@
       "request": "launch",
       "name": "Launch Program",
       "program": "${workspaceFolder}/dist/app.js",
-      "preLaunchTask": "build",
+      "preLaunchTask": "prepare",
+      "postDebugTask": "Terminate All Tasks",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "killBehavior": "forceful"
+      "killBehavior": "forceful",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
     }
   ]
 }

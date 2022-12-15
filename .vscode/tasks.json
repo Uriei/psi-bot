@@ -2,6 +2,22 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "prepare",
+      "type": "shell",
+      "command": "echo \"Ready\"",
+      "dependsOn": ["mongod", "build"],
+      "dependsOrder": "parallel",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": true,
+        "close": true
+      }
+    },
+    {
       "label": "build",
       "type": "npm",
       "script": "build:dev",
@@ -9,10 +25,45 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "shared",
+        "panel": "dedicated",
         "showReuseMessage": true,
         "clear": true,
         "close": true
+      }
+    },
+    {
+      "label": "mongod",
+      "type": "shell",
+      "command": "cmd.exe /d /c mongod.exe --dbpath ${env:localappdata}\\mongodb\\data",
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": "\"s\":\"(.+?)\".*\"msg\":\"(.+?)\".*",
+              "line": 0,
+              "file": 0,
+              "kind": "location",
+              "severity": 1,
+              "message": 2
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": { "regexp": "MongoDB starting" },
+            "endsPattern": { "regexp": ".*Waiting for connections.*" }
+          }
+        }
+      ],
+      "presentation": {
+        "echo": false,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true,
+        "close": true,
+        "revealProblems": "never"
       }
     },
     {
