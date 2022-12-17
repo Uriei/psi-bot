@@ -77,7 +77,6 @@ export class Google {
   }
 
   public async getGalnetArticles() {
-    // TODO SWITCH FROM GDOCS TO MONGOOSE
     return this.galnetSheet?.getRows().then((res) => {
       return this.galnetSheet?.loadCells().then(() => {
         const galnetEntries: any[] = [];
@@ -127,7 +126,6 @@ export class Google {
   }
 
   public async getEliteDevPosts() {
-    // TODO SWITCH FROM GDOCS TO MONGOOSE
     return this.eliteDevPostsSheet?.getRows().then((res) => {
       return this.eliteDevPostsSheet?.loadCells().then(() => {
         const devPostsEntries: any[] = [];
@@ -215,7 +213,6 @@ export class Google {
   }
 
   public async getLastTweetID() {
-    // TODO SWITCH FROM GDOCS TO MONGOOSE
     if (!this.configsSheet) {
       return Number.MAX_VALUE;
     }
@@ -231,29 +228,6 @@ export class Google {
           }
         }
         return undefined;
-      });
-    });
-  }
-
-  public async setLastTweetID(id: string) {
-    // TODO SWITCH FROM GDOCS TO MONGOOSE
-    if (this.testMode) return;
-    if (!this.configsSheet) {
-      return Number.MAX_VALUE;
-    }
-    return await this.configsSheet.loadCells().then(async () => {
-      return await this.configsSheet?.getRows().then(async (res) => {
-        for (const row of res) {
-          if (
-            this.configsSheet?.getCell(row.rowIndex - 1, 0).value ===
-            TWITTER_LAST_TWEET_ID_ROWNAME
-          ) {
-            const cell = this.configsSheet.getCell(row.rowIndex - 1, 1);
-
-            cell.value = id;
-            return await cell.save();
-          }
-        }
       });
     });
   }

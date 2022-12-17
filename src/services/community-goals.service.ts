@@ -7,7 +7,6 @@ import {
 } from '../modules/models/community-goals.model';
 import moment from 'moment';
 import { prepareCGDiscordMessage } from '../modules/utils';
-import {} from 'module';
 
 const communityGoalsFeedURL =
   'https://api.orerve.net/2.0/website/initiatives/list?lang=en';
