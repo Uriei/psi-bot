@@ -9,13 +9,25 @@ export async function populateGalnet() {
     const galnetArticles = (await gdocs.getGalnetArticles()) || [];
     console.info('Populate Service: Populating Galnet Articles');
     for (const item of galnetArticles) {
-      await db.addGalnetEntry(
-        item.guid,
-        item.title,
-        item.content,
-        item.date,
-        item.link,
-      );
+      if (item.guid) {
+        try {
+          await db.addGalnetEntry(
+            item.guid,
+            item.title,
+            item.content,
+            item.date,
+            item.link,
+          );
+        } catch (error: any) {
+          if (error.code === 11000) {
+            console.error(
+              `DB: Duplicated Galnet Article with GUID=${error.keyValue.guid}`,
+            );
+          } else {
+            throw error;
+          }
+        }
+      }
     }
     console.info('Populate Service: Galnet population done');
   } else {
@@ -31,13 +43,25 @@ export async function populateDevPosts() {
     const devPosts = (await gdocs.getEliteDevPosts()) || [];
     console.info('Populate Service: Populating Elite Dev Posts');
     for (const item of devPosts) {
-      await db.addEliteDevPostEntry(
-        item.guid,
-        item.author,
-        item.title,
-        item.content,
-        item.date,
-      );
+      if (item.guid) {
+        try {
+          await db.addEliteDevPostEntry(
+            item.guid,
+            item.author,
+            item.title,
+            item.content,
+            item.date,
+          );
+        } catch (error: any) {
+          if (error.code === 11000) {
+            console.error(
+              `DB: Duplicated DevPost Article with GUID=${error.keyValue.guid}`,
+            );
+          } else {
+            throw error;
+          }
+        }
+      }
     }
     console.info('Populate Service: Elite Dev Posts population done');
   } else {

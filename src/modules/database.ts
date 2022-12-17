@@ -167,10 +167,14 @@ export class DB {
       guid,
       title,
       content,
-      date: moment(date).toDate(),
+      date: moment(date, ['YYYY/MM/DD', 'YYYY-MM-DD']).toDate(),
       link,
     });
-    return newGalnetEntry.save();
+    try {
+      return newGalnetEntry.save();
+    } catch (error) {
+      return null;
+    }
   }
 
   public async getGalnetAll() {
@@ -215,7 +219,11 @@ export class DB {
       content,
       date,
     });
-    return newEliteDevPostEntry.save();
+    try {
+      return newEliteDevPostEntry.save();
+    } catch (error) {
+      return null;
+    }
   }
 
   public async getEliteDevPostAll() {
@@ -234,7 +242,11 @@ export class DB {
     const newEdSystem = new this.edSystemModel({
       ...systemData,
     });
-    return newEdSystem.save();
+    try {
+      return newEdSystem.save();
+    } catch (error) {
+      return null;
+    }
   }
 
   public async findEdSystemByName(systemName: string) {

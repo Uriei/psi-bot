@@ -50,13 +50,13 @@ export function prepareDbGalnetDiscordMessage(
 ): MessageCreateOptions {
   if (
     !galnetEntry ||
-    !galnetEntry.content ||
     !galnetEntry.title ||
     !galnetEntry.guid ||
     !galnetEntry.date
   ) {
     throw Error('Invalid Galnet DB Entry');
   }
+  galnetEntry.content = galnetEntry.content || '';
   let content = '';
   if (galnetEntry.content.length <= 4096) {
     content = galnetEntry.content;
@@ -68,14 +68,16 @@ export function prepareDbGalnetDiscordMessage(
   const galnetEmbed = new EmbedBuilder()
     .setColor(0xff8c0d)
     .setTitle(galnetEntry.title)
-
     .setAuthor({
       name: 'Galnet News',
       iconURL: 'https://i.imgur.com/lIgmINY.png',
       url: 'https://community.elitedangerous.com/galnet',
     })
-    .setDescription(content)
     .setTimestamp(moment(galnetEntry.date).toDate());
+
+  if (content) {
+    galnetEmbed.setDescription(content);
+  }
 
   // TODO Temporary until I get proper urls for really old articles
   if (
