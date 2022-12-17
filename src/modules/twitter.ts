@@ -83,6 +83,9 @@ export class Twitter {
 
     for (const tweet of results) {
       let addTweet = true;
+      if (moment(tweet.created_at).isBefore(moment().subtract(1, 'day'))) {
+        addTweet = false;
+      }
       if (!replies && tweet.in_reply_to_user_id) {
         addTweet = false;
       }
