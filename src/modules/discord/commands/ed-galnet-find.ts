@@ -33,6 +33,14 @@ export default {
             .setMaxLength(255)
             .setAutocomplete(true)
             .setRequired(true),
+        )
+        .addBooleanOption((booleanOption) =>
+          booleanOption
+            .setName('public')
+            .setDescription(
+              'Optional: Posts the Article publicly for everyone to see',
+            )
+            .setRequired(false),
         ),
     )
     .addSubcommand((subCommand) =>
@@ -56,6 +64,7 @@ export default {
       let send: InteractionReplyOptions = {};
       if (subCommand === 'by-title') {
         const title = interaction.options.getString('title', true);
+        const publicSearch = interaction.options.getBoolean('public', false);
         const article = (await db.getGalnetAll()).find(
           (g) => g.title === title,
         );
@@ -77,7 +86,10 @@ export default {
         if ('string' === typeof reply) {
           send = { content: reply, ephemeral: true };
         } else {
-          send = { ...reply, ephemeral: true } as InteractionReplyOptions;
+          send = {
+            ...reply,
+            ephemeral: !publicSearch,
+          } as InteractionReplyOptions;
         }
         await interaction.reply(send);
       } else if (subCommand === 'by-text') {
@@ -104,13 +116,12 @@ export default {
 
             const interactionReply = await interaction.reply(
               generateReply(galnetArticlesFormattedDiscord[galnetIndex], [
-                generateButtons(galnetIndex, articles.length),
+                ...generateButtonsGalnetByText(galnetIndex, articles.length),
               ]),
             );
 
             interactionReply
               .createMessageComponentCollector({
-                //  filter: (c) => c.isButton(),
                 time: 600000,
               })
               .on('collect', async (c) => {
@@ -122,7 +133,12 @@ export default {
                     await interaction.editReply(
                       generateReply(
                         galnetArticlesFormattedDiscord[galnetIndex],
-                        [generateButtons(galnetIndex, articles.length)],
+                        [
+                          ...generateButtonsGalnetByText(
+                            galnetIndex,
+                            articles.length,
+                          ),
+                        ],
                       ),
                     );
                     await c.update({});
@@ -133,7 +149,12 @@ export default {
                     await interaction.editReply(
                       generateReply(
                         galnetArticlesFormattedDiscord[galnetIndex],
-                        [generateButtons(galnetIndex, articles.length)],
+                        [
+                          ...generateButtonsGalnetByText(
+                            galnetIndex,
+                            articles.length,
+                          ),
+                        ],
                       ),
                     );
                     await c.update({});
@@ -147,7 +168,12 @@ export default {
                     await interaction.editReply(
                       generateReply(
                         galnetArticlesFormattedDiscord[galnetIndex],
-                        [generateButtons(galnetIndex, articles.length)],
+                        [
+                          ...generateButtonsGalnetByText(
+                            galnetIndex,
+                            articles.length,
+                          ),
+                        ],
                       ),
                     );
                     await c.update({});
@@ -158,10 +184,31 @@ export default {
                     await interaction.editReply(
                       generateReply(
                         galnetArticlesFormattedDiscord[galnetIndex],
-                        [generateButtons(galnetIndex, articles.length)],
+                        [
+                          ...generateButtonsGalnetByText(
+                            galnetIndex,
+                            articles.length,
+                          ),
+                        ],
                       ),
                     );
                     await c.update({});
+                    break;
+                  case 'post_public':
+                    await interaction.editReply(
+                      generateReply(
+                        galnetArticlesFormattedDiscord[galnetIndex],
+                        [],
+                      ),
+                    );
+                    await interaction.followUp(
+                      generateReply(
+                        galnetArticlesFormattedDiscord[galnetIndex],
+                        [],
+                        false,
+                      ),
+                    );
+
                     break;
                   case 'galnet_page':
                     var modalPageSelector = new TextInputBuilder()
@@ -210,7 +257,12 @@ export default {
                     await interaction.editReply(
                       generateReply(
                         galnetArticlesFormattedDiscord[galnetIndex],
-                        [generateButtons(galnetIndex, articles.length)],
+                        [
+                          ...generateButtonsGalnetByText(
+                            galnetIndex,
+                            articles.length,
+                          ),
+                        ],
                       ),
                     );
                     break;
@@ -298,47 +350,56 @@ export default {
   },
 };
 
-function generateButtons(
+function generateButtonsGalnetByText(
   index: number,
   maxIndex: number,
   buttonsEnabled = true,
 ) {
-  return new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId('galnet_first')
-      .setLabel('<<')
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(!buttonsEnabled || index <= 0),
-    new ButtonBuilder()
-      .setCustomId('galnet_previous')
-      .setLabel('<')
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(!buttonsEnabled || index <= 0),
-    new ButtonBuilder()
-      .setCustomId('galnet_page')
-      .setLabel(`${index + 1} / ${maxIndex}`)
-      .setStyle(ButtonStyle.Success)
-      .setDisabled(!buttonsEnabled),
-    new ButtonBuilder()
-      .setCustomId('galnet_next')
-      .setLabel('>')
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(!buttonsEnabled || index >= maxIndex - 1),
-    new ButtonBuilder()
-      .setCustomId('galnet_last')
-      .setLabel('>>')
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(!buttonsEnabled || index >= maxIndex - 1),
-  );
+  return [
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId('galnet_first')
+        .setLabel('<<')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(!buttonsEnabled || index <= 0),
+      new ButtonBuilder()
+        .setCustomId('galnet_previous')
+        .setLabel('<')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(!buttonsEnabled || index <= 0),
+      new ButtonBuilder()
+        .setCustomId('galnet_page')
+        .setLabel(`${index + 1} / ${maxIndex}`)
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(!buttonsEnabled),
+      new ButtonBuilder()
+        .setCustomId('galnet_next')
+        .setLabel('>')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(!buttonsEnabled || index >= maxIndex - 1),
+      new ButtonBuilder()
+        .setCustomId('galnet_last')
+        .setLabel('>>')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(!buttonsEnabled || index >= maxIndex - 1),
+    ),
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId('post_public')
+        .setLabel('Post in channel')
+        .setStyle(ButtonStyle.Primary),
+    ),
+  ];
 }
 
 function generateReply(
   article: MessageCreateOptions,
   components: Array<ActionRowBuilder<ButtonBuilder>>,
+  ephemeral = true,
 ) {
   return {
     embeds: article.embeds as Array<APIEmbed>,
     components,
-    ephemeral: true,
+    ephemeral,
   };
 }
