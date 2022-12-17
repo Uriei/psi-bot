@@ -5,6 +5,7 @@ import { Google } from '../modules/g-docs';
 import {
   IGalnetRssResponseFrontier,
   IGalnetRssItemFrontier,
+  IGalnetRssResponseGoneGeeky,
 } from '../modules/models/rss.model';
 import { getGalnetNewFeed } from '../modules/rss';
 import { prepareRssGalnetDiscordMessage } from '../modules/utils';
@@ -83,7 +84,9 @@ export class GalnetService {
   }
 
   private async findNewGalnetArticles(
-    latestGalnetRssResponse: IGalnetRssResponseFrontier,
+    latestGalnetRssResponse:
+      | IGalnetRssResponseFrontier
+      | IGalnetRssResponseGoneGeeky,
   ) {
     if (!this.db) {
       throw Error('Galnet Service: Database not detected.');
@@ -92,7 +95,7 @@ export class GalnetService {
     let newEntries: Array<IGalnetRssItemFrontier> = [];
     for (const item of latestGalnetRssResponse.items) {
       if (!(await this.db?.findGalnetByGuidOrTitle(item.guid, item.title))) {
-        newEntries.push(item);
+        newEntries.push(item as IGalnetRssItemFrontier);
       }
     }
 

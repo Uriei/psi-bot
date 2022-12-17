@@ -85,12 +85,7 @@ export function prepareDbGalnetDiscordMessage(
     )
   ) {
     galnetEmbed.setURL(galnetEntry.link);
-  } else if (
-    !galnetEntry.link &&
-    !/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@%_+.~#?&/=]*)$/g.test(
-      galnetEntry.guid,
-    )
-  ) {
+  } else if (!galnetEntry.link && !/^http.*$/g.test(galnetEntry.guid)) {
     const link = `https://community.elitedangerous.com/en/galnet/uid/${galnetEntry.guid}`;
     galnetEmbed.setURL(link);
   }

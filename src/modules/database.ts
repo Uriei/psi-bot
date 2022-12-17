@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 mongoose.set('strictQuery', false);
-import { upperCase as _upperCase } from 'lodash';
+import { deburr as _deburr, upperCase as _upperCase } from 'lodash';
 import { ISystemData } from './models/system-data.model';
 import { IGalnetArticle } from './models/galnet.model';
 import { IDevPost } from './models/devpost.model';
@@ -9,12 +9,13 @@ import {
   ICommunityGoalMessageDB,
 } from './models/community-goals.model';
 import { isEndedCG } from './utils';
+import moment from 'moment';
 
 export class DB {
   private static instance: DB;
 
   private galnetEntrySchema = new mongoose.Schema({
-    guid: String,
+    guid: { type: String, index: true, unique: true },
     title: String,
     content: String,
     date: Date,
@@ -44,10 +45,10 @@ export class DB {
   private dataModel = mongoose.model('Data', this.dataSchema);
 
   private edSystemSchema = new mongoose.Schema({
-    upperName: String,
+    upperName: { type: String, index: true },
     systemName: String,
     id: Number,
-    id64: Number,
+    id64: { type: Number, index: true, unique: true },
     x: Number,
     y: Number,
     z: Number,
@@ -161,11 +162,12 @@ export class DB {
     date: string,
     link: string,
   ) {
+    guid = cleanGalnetGuid(guid);
     const newGalnetEntry = new this.galnetEntryModel({
-      guid: guid.substring(guid.lastIndexOf('/') + 1),
+      guid,
       title,
       content,
-      date,
+      date: moment(date).toDate(),
       link,
     });
     return newGalnetEntry.save();
@@ -178,19 +180,24 @@ export class DB {
   }
 
   public async findGalnetByGuid(guid: string) {
+    guid = cleanGalnetGuid(guid);
     return await this.galnetEntryModel.findOne<IGalnetArticle>({
-      guid: guid.substring(guid.lastIndexOf('/') + 1),
+      guid,
     });
   }
 
   public async findGalnetByGuidOrTitle(guid: string, title: string) {
+    guid = cleanGalnetGuid(guid);
     const result =
       (await this.galnetEntryModel.findOne<IGalnetArticle>({
-        guid: guid.substring(guid.lastIndexOf('/') + 1),
+        guid,
       })) ||
-      (await this.galnetEntryModel.findOne<IGalnetArticle>({
-        title,
-      }));
+      (await this.galnetEntryModel.find<IGalnetArticle>()).find(
+        (g) =>
+          cleanGalnetTitle(g.title).localeCompare(cleanGalnetTitle(title)) ===
+          0,
+      );
+
     return result;
   }
 
@@ -303,4 +310,15 @@ export class DB {
     }
     return null;
   }
+}
+
+function cleanGalnetGuid(guid: string): string {
+  let result = guid.substring(guid.lastIndexOf('/') + 1);
+  result = result.toLowerCase();
+  return result;
+}
+function cleanGalnetTitle(title: string): string {
+  let result = title.toLowerCase();
+  result = _deburr(result);
+  return result;
 }
