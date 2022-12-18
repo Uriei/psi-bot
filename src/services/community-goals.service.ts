@@ -46,7 +46,7 @@ export class CommunityGoalsService {
     }
   }
 
-  public async start(interval: number = 300000) {
+  public async start(interval: number = 900000) {
     if (interval < 60000) {
       console.error("Interval can't be lower than 60000ms, 1 minute.");
     } else {
