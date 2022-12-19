@@ -41,8 +41,8 @@ class Discord {
     this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
     this.slashCommands = {};
     this.fillSlashCommands();
+    this.registerSlashCommandsDiscord();
     this.registerSlashCommandsInteractions();
-    this.registerSlashCommandsDiscord().then();
 
     this.login().then().catch();
 
@@ -330,12 +330,7 @@ class Discord {
     }
 
     if (this.client.isReady()) {
-      return channel.send(communityGoal).then((res) => {
-        if (res.crosspostable) {
-          res.crosspost().then(() => {});
-        }
-        return Promise.resolve(res);
-      });
+      return channel.send(communityGoal);
     } else {
       return Promise.reject(`ERROR: Send CG - Client not ready`);
     }
@@ -360,12 +355,7 @@ class Discord {
       }
 
       if (this.client.isReady()) {
-        return await message.edit(communityGoal).then((res) => {
-          if (res.crosspostable) {
-            res.crosspost().then(() => {});
-          }
-          return Promise.resolve(res);
-        });
+        return await message.edit(communityGoal);
       } else {
         return Promise.reject(`ERROR: Send CG - Client not ready`);
       }
