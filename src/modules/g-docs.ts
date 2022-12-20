@@ -3,8 +3,6 @@ import {
   GoogleSpreadsheetWorksheet,
 } from 'google-spreadsheet';
 
-const TWITTER_LAST_TWEET_ID_ROWNAME = 'TwitterLastTweetID';
-
 export class Google {
   private static instance: Google;
 
@@ -210,25 +208,5 @@ export class Google {
     }
 
     return Promise.resolve(devsData);
-  }
-
-  public async getLastTweetID() {
-    if (!this.configsSheet) {
-      return Number.MAX_VALUE;
-    }
-    return await this.configsSheet.loadCells().then(async () => {
-      return await this.configsSheet?.getRows().then((res) => {
-        for (const row of res) {
-          if (
-            this.configsSheet?.getCell(row.rowIndex - 1, 0).value ===
-            TWITTER_LAST_TWEET_ID_ROWNAME
-          ) {
-            const cell = this.configsSheet?.getCell(row.rowIndex - 1, 1);
-            return cell.value ? cell.value.toString() : undefined;
-          }
-        }
-        return undefined;
-      });
-    });
   }
 }

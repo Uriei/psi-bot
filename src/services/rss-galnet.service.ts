@@ -140,7 +140,7 @@ export class GalnetService {
   ) {
     for (const entry of newGalnetEntries) {
       await this.gdoc?.addNewGalnetEntry(
-        entry.guid,
+        entry.guid.substring(entry.guid.lastIndexOf('/') + 1),
         moment(entry.isoDate).format('YYYY/MM/DD'),
         entry.title,
         entry.contentSnippet,
