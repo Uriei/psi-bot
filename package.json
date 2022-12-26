@@ -23,7 +23,7 @@
     "mongoose": "^6.8.0",
     "node": "^19.3.0",
     "rss-parser": "^3.12.0",
-    "twitter-api-v2": "^1.12.10",
+    "twitter-api-v2": "^1.13.0",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
