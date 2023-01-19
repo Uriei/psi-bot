@@ -365,6 +365,7 @@ function calculateTimeLeft(expiry: Date) {
 function mapCgActivity(activityType: string): string {
   const activities = {
     tradelist: 'Trade',
+    bounty: 'Bounty',
   };
   return _get(activities, [activityType], activityType);
 }
