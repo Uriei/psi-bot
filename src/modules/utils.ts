@@ -187,14 +187,21 @@ export function prepareCGDiscordMessage(
         inline: true,
       },
       {
-        name: communityGoal.qty ? `Quantity Delivered` : `\b`,
+        name:
+          communityGoal.qty !== null && communityGoal.qty !== undefined
+            ? `Quantity Delivered`
+            : `\b`,
         value: communityGoal.qty
           ? communityGoal.qty.toLocaleString('en')
           : `\b`,
         inline: true,
       },
       {
-        name: communityGoal.target_qty ? `Quantity Requested` : `\b`,
+        name:
+          communityGoal.target_qty !== null &&
+          communityGoal.target_qty !== undefined
+            ? `Quantity Requested`
+            : `\b`,
         value: communityGoal.target_qty
           ? communityGoal.target_qty.toLocaleString('en')
           : `\b`,
@@ -375,7 +382,12 @@ function cgProgressBar(communityGoal: ICommunityGoalDB): string {
   const MAX_LENGTH = 20;
   let result = '';
 
-  if (communityGoal.target_qty && communityGoal.qty) {
+  if (
+    communityGoal.target_qty !== undefined &&
+    communityGoal.target_qty !== null &&
+    communityGoal.qty !== undefined &&
+    communityGoal.qty !== null
+  ) {
     const max = communityGoal.target_qty;
     const current = communityGoal.qty;
     const percent = (current * MAX_LENGTH) / max;
