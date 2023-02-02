@@ -76,6 +76,13 @@ export class CommunityGoalsService {
         .then((response) =>
           parser.parseString(response, (err, result) => {
             if (err) resolve({ data: { activeInitiatives: { item: [] } } });
+            if (
+              !result ||
+              !result.data ||
+              !result.activeInitiatives ||
+              !Array.isArray(result.activeInitiatives.item)
+            )
+              resolve({ data: { activeInitiatives: { item: [] } } });
             resolve(result);
           }),
         )

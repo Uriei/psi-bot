@@ -170,14 +170,14 @@ export function prepareCGDiscordMessage(
       {
         name: `Time Left`,
         value: isEndedCG(communityGoal)
-          ? 'GOAL REACHED'
+          ? 'ENDED'
           : calculateTimeLeft(communityGoal.expiry),
         inline: true,
       },
       {
         name: `Expires`,
         value: isEndedCG(communityGoal)
-          ? 'GOAL REACHED'
+          ? 'ENDED'
           : `<t:${moment(communityGoal.expiry).unix()}:F>`,
         inline: true,
       },
