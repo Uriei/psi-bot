@@ -49,23 +49,28 @@ export class GalnetService {
   }
 
   private async runGalnetService() {
-    console.debug('Galnet Service: Checking for new Galnet Articles.');
-    const latestGalnetArticles = await this.getLatestGalnetArticles();
-    const newGalnetEntries = await this.findNewGalnetArticles(
-      latestGalnetArticles,
-    );
-    let newGalnetEntriesAddedCount = 0;
-    if (newGalnetEntries.length > 0) {
-      newGalnetEntriesAddedCount = await this.addNewGalnetEntries(
-        newGalnetEntries,
+    try {
+      console.debug('Galnet Service: Checking for new Galnet Articles.');
+      const latestGalnetArticles = await this.getLatestGalnetArticles();
+      const newGalnetEntries = await this.findNewGalnetArticles(
+        latestGalnetArticles,
       );
+      let newGalnetEntriesAddedCount = 0;
+      if (newGalnetEntries.length > 0) {
+        newGalnetEntriesAddedCount = await this.addNewGalnetEntries(
+          newGalnetEntries,
+        );
+      }
+
+      console.debug(
+        'Galnet Service: Added ' +
+          newGalnetEntriesAddedCount +
+          ' new galnet Articles',
+      );
+    } catch (error) {
+      console.error('Galnet Service: ERROR:', error);
     }
 
-    console.debug(
-      'Galnet Service: Added ' +
-        newGalnetEntriesAddedCount +
-        ' new galnet Articles',
-    );
     this.scheduleNextRun();
   }
 

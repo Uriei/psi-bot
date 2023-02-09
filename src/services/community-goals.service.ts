@@ -57,9 +57,13 @@ export class CommunityGoalsService {
   }
 
   private async runCgService() {
-    console.debug('CommunityGoals Service: Checking for new CG updates.');
-    const currentCGs = await this.getCommunityGoalsData();
-    await this.updateCGsDiscord(currentCGs);
+    try {
+      console.debug('CommunityGoals Service: Checking for new CG updates.');
+      const currentCGs = await this.getCommunityGoalsData();
+      await this.updateCGsDiscord(currentCGs);
+    } catch (error) {
+      console.error('CommunityGoals Service: ERROR:', error);
+    }
 
     this.scheduleNextRun();
   }

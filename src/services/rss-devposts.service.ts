@@ -47,17 +47,25 @@ export class DevPostsService {
   }
 
   private async runEliteDevPostsService() {
-    console.debug('DevPosts Service: Checking for new DevPosts.');
-    const latestDevPosts = await this.getLatestDevPostsRss();
-    const newDevPosts = await this.findNewDevPosts(latestDevPosts, 'MiggyRSS');
-    let newDevPostsAddedCount = 0;
-    if (newDevPosts.length > 0) {
-      newDevPostsAddedCount = await this.addNewDevPosts(newDevPosts);
+    try {
+      console.debug('DevPosts Service: Checking for new DevPosts.');
+      const latestDevPosts = await this.getLatestDevPostsRss();
+      const newDevPosts = await this.findNewDevPosts(
+        latestDevPosts,
+        'MiggyRSS',
+      );
+      let newDevPostsAddedCount = 0;
+      if (newDevPosts.length > 0) {
+        newDevPostsAddedCount = await this.addNewDevPosts(newDevPosts);
+      }
+
+      console.debug(
+        'DevPosts Service: Added ' + newDevPostsAddedCount + ' new DevPosts',
+      );
+    } catch (error) {
+      console.error('DevPosts Service: ERROR:', error);
     }
 
-    console.debug(
-      'DevPosts Service: Added ' + newDevPostsAddedCount + ' new DevPosts',
-    );
     this.scheduleNextRun();
   }
 

@@ -37,19 +37,24 @@ export class TwitterService {
   }
 
   private async runTwitterService() {
-    console.debug('Twitter Service: Checking for new Tweets.');
-    const latestDevPosts = await this.getLatestTweets();
+    try {
+      console.debug('Twitter Service: Checking for new Tweets.');
+      const latestDevPosts = await this.getLatestTweets();
 
-    if (latestDevPosts.length > 0) {
-      for (let index = 0; index < latestDevPosts.length; index++) {
-        const element = latestDevPosts[index];
-        await this.discord?.sendTwitterDevPost(element).then(() => {});
+      if (latestDevPosts.length > 0) {
+        for (let index = 0; index < latestDevPosts.length; index++) {
+          const element = latestDevPosts[index];
+          await this.discord?.sendTwitterDevPost(element).then(() => {});
+        }
       }
+
+      console.debug(
+        'Twitter Service: Added ' + latestDevPosts.length + ' new Tweets',
+      );
+    } catch (error) {
+      console.error('Twitter Service: ERROR:', error);
     }
 
-    console.debug(
-      'Twitter Service: Added ' + latestDevPosts.length + ' new Tweets',
-    );
     this.scheduleNextRun();
   }
 
