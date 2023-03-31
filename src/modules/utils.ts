@@ -1,5 +1,10 @@
 import { Item as RssItem } from 'rss-parser';
-import { APIEmbed, EmbedBuilder, MessageCreateOptions } from 'discord.js';
+import {
+  APIEmbed,
+  EmbedBuilder,
+  MessageCreateOptions,
+  MessageEditOptions,
+} from 'discord.js';
 import moment from 'moment';
 import { decode } from 'html-entities';
 import { IGalnetArticle } from './models/galnet.model';
@@ -137,7 +142,7 @@ export function prepareRssEliteDevDiscordMessage(eliteDevPost: RssItem) {
 
 export function prepareCGDiscordMessage(
   communityGoal: ICommunityGoalDB,
-): MessageCreateOptions {
+): MessageCreateOptions | MessageEditOptions {
   const embed: APIEmbed = {
     title: communityGoal.title,
     description: communityGoal.bulletin,

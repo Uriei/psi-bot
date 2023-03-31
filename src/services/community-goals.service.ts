@@ -7,6 +7,7 @@ import {
 } from '../modules/models/community-goals.model';
 import moment from 'moment';
 import { prepareCGDiscordMessage } from '../modules/utils';
+import { MessageCreateOptions, MessageEditOptions } from 'discord.js';
 
 const communityGoalsFeedURL =
   'https://api.orerve.net/2.0/website/initiatives/list?lang=en';
@@ -122,13 +123,13 @@ export class CommunityGoalsService {
           if (!message.ended) {
             await this.discord?.updateCG(
               message.messageId,
-              prepareCGDiscordMessage(cg),
+              prepareCGDiscordMessage(cg) as MessageEditOptions,
             );
             await this.db?.updateCommunityGoalMessage(cg);
           }
         } else if (!message) {
           const newMessageId = await this.discord?.createCG(
-            prepareCGDiscordMessage(cg),
+            prepareCGDiscordMessage(cg) as MessageCreateOptions,
           );
           if (newMessageId && newMessageId.id) {
             await this.db?.addCommunityGoalMessage(newMessageId.id, cg);

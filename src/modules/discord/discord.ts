@@ -8,6 +8,7 @@ import {
   REST,
   Routes,
   MessageCreateOptions,
+  MessageEditOptions,
 } from 'discord.js';
 import { TweetV2 } from 'twitter-api-v2';
 import * as fs from 'fs';
@@ -336,7 +337,7 @@ class Discord {
     }
   }
 
-  async updateCG(messageId: string, communityGoal: MessageCreateOptions) {
+  async updateCG(messageId: string, communityGoal: MessageEditOptions) {
     if (!this.communityGoalChannelID || !messageId) return null;
 
     if (!communityGoal) {
