@@ -62,7 +62,7 @@ export function prepareDbGalnetDiscordMessage(
   ) {
     throw Error('Invalid Galnet DB Entry');
   }
-  galnetEntry.content = galnetEntry.content || '';
+  galnetEntry.content = markWords(galnetEntry.content, wordsArrayToMark) || '';
   let content = '';
   if (galnetEntry.content.length <= 4096) {
     content = galnetEntry.content;
@@ -82,7 +82,7 @@ export function prepareDbGalnetDiscordMessage(
     .setTimestamp(moment(galnetEntry.date).toDate());
 
   if (content) {
-    galnetEmbed.setDescription(markWords(content, wordsArrayToMark));
+    galnetEmbed.setDescription(content);
   }
 
   // TODO Temporary until I get proper urls for really old articles
