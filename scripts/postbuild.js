@@ -5,14 +5,12 @@ const myArgs = process.argv.slice(2);
 (() => {
   const pathPackageJson = path.join('.', 'package.json');
   if (!fs.existsSync(pathPackageJson)) {
-    console.error(
-      `No se encuentra el fichero "package.json" en "${pathPackageJson}"`,
-    );
+    console.error(`Couldn't find "package.json" in "${pathPackageJson}"`);
     process.exit(1);
   }
   const packageJsonRaw = fs.readFileSync(pathPackageJson);
   if (!packageJsonRaw) {
-    console.error(`El fichero "package.json" está vacío.`);
+    console.error(`"package.json" file is empty`);
     process.exit(1);
   }
   const packageJson = JSON.parse(packageJsonRaw);

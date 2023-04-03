@@ -52,6 +52,7 @@ export function prepareRssGalnetDiscordMessage(
 
 export function prepareDbGalnetDiscordMessage(
   galnetEntry: IGalnetArticle,
+  wordsArrayToMark: Array<string> = [],
 ): MessageCreateOptions {
   if (
     !galnetEntry ||
@@ -72,7 +73,7 @@ export function prepareDbGalnetDiscordMessage(
 
   const galnetEmbed = new EmbedBuilder()
     .setColor(0xff8c0d)
-    .setTitle(galnetEntry.title)
+    .setTitle(markWords(galnetEntry.title, wordsArrayToMark))
     .setAuthor({
       name: 'Galnet News',
       iconURL: 'https://i.imgur.com/lIgmINY.png',
@@ -81,7 +82,7 @@ export function prepareDbGalnetDiscordMessage(
     .setTimestamp(moment(galnetEntry.date).toDate());
 
   if (content) {
-    galnetEmbed.setDescription(content);
+    galnetEmbed.setDescription(markWords(content, wordsArrayToMark));
   }
 
   // TODO Temporary until I get proper urls for really old articles
@@ -414,4 +415,12 @@ export function isEndedCG(communityGoal: ICommunityGoalDB): boolean {
 function getNextUpdate(interval: number): string {
   const nextUpdate = moment().add(interval, 'milliseconds');
   return `<t:${nextUpdate.unix()}:R>`;
+}
+function markWords(content: string, wordsArrayToMark: string[]): string {
+  let markedContent: string = content;
+  for (const word of wordsArrayToMark) {
+    const wordRegex = new RegExp(`(${word})`, 'gi');
+    markedContent = markedContent.replace(wordRegex, '__**$1**__');
+  }
+  return markedContent;
 }

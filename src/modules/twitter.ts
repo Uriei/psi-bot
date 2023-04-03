@@ -1,4 +1,8 @@
-import { TwitterApi, TwitterApiReadOnly } from 'twitter-api-v2';
+import {
+  TweetSearchRecentV2Paginator,
+  TwitterApi,
+  TwitterApiReadOnly,
+} from 'twitter-api-v2';
 import moment from 'moment';
 import { Google } from './g-docs';
 import { DB } from './database';
@@ -7,6 +11,7 @@ export class Twitter {
   private static instance: Twitter;
   private twitterToken: string = '';
   private currentLastTweetID: string | undefined;
+  private invalidId = false;
   private readOnlyClient: TwitterApiReadOnly | undefined;
   private db: DB | null = null;
 
@@ -40,7 +45,7 @@ export class Twitter {
     if (!this.readOnlyClient) {
       return [];
     }
-    if (!this.currentLastTweetID) {
+    if (!this.invalidId && !this.currentLastTweetID) {
       this.currentLastTweetID = await this.db?.getTwitterLastId();
     }
 
@@ -56,23 +61,33 @@ export class Twitter {
       .join(' OR ')})`;
     let search = [authorsString];
     let searchString = `(${search.join(' AND ')})`;
-
-    const results = await this.readOnlyClient.v2.search(searchString, {
-      'tweet.fields': [
-        'in_reply_to_user_id',
-        'entities',
-        'attachments',
-        'referenced_tweets',
-        'context_annotations',
-        'withheld',
-        'author_id',
-      ],
-      'user.fields': ['name', 'url', 'profile_image_url', 'username'],
-      since_id: this.currentLastTweetID,
-      start_time: !this.currentLastTweetID
-        ? moment().subtract(1, 'days').toISOString()
-        : undefined,
-    });
+    let results: TweetSearchRecentV2Paginator | null = null;
+    try {
+      results = await this.readOnlyClient.v2.search(searchString, {
+        'tweet.fields': [
+          'in_reply_to_user_id',
+          'entities',
+          'attachments',
+          'referenced_tweets',
+          'context_annotations',
+          'withheld',
+          'author_id',
+        ],
+        'user.fields': ['name', 'url', 'profile_image_url', 'username'],
+        since_id: this.currentLastTweetID,
+        start_time: !this.currentLastTweetID
+          ? moment().subtract(1, 'days').toISOString()
+          : undefined,
+      });
+    } catch (error: any) {
+      if (JSON.stringify(error).includes('since_id')) {
+        this.invalidId = true;
+        this.currentLastTweetID = undefined;
+      } else {
+        throw error;
+      }
+    }
+    if (results === null) return [];
     const tweetsToReturn = [];
 
     while (!results.done) {
@@ -117,6 +132,7 @@ export class Twitter {
     if (lastTweetID !== this.currentLastTweetID && lastTweetID !== '0') {
       await this.db?.setTwitterLastId(lastTweetID);
       this.currentLastTweetID = lastTweetID;
+      this.invalidId = false;
     }
     return Promise.resolve(
       tweetsToReturn.sort((a, b) => parseInt(a.id) - parseInt(b.id)),

@@ -94,9 +94,10 @@ export default {
         await interaction.reply(send);
       } else if (subCommand === 'by-text') {
         const words = _upperCase(interaction.options.getString('words', true));
+        let wordsArray: Array<string> = [];
         const articles = (await db.getGalnetAll()).filter((g) => {
           const wholeText = _upperCase(g.title + ' ' + g.content);
-          const wordsArray = words.split(/\W/g);
+          wordsArray = words.split(/\W/g);
           return wordsArray.every((w) => wholeText.includes(w));
         });
 
@@ -109,7 +110,7 @@ export default {
             return;
           } else {
             const galnetArticlesFormattedDiscord = articles.map((g) =>
-              prepareDbGalnetDiscordMessage(g),
+              prepareDbGalnetDiscordMessage(g, wordsArray),
             );
 
             let galnetIndex = 0;
