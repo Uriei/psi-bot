@@ -40,6 +40,7 @@ class Discord {
   private constructor() {
     this.getCredentialInfo();
     this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
+    this.client.on('debug', console.debug).on('warn', console.debug);
     this.slashCommands = {};
     this.fillSlashCommands();
     this.registerSlashCommandsDiscord();

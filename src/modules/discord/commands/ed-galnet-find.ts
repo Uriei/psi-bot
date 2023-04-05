@@ -93,12 +93,33 @@ export default {
         }
         await interaction.reply(send);
       } else if (subCommand === 'by-text') {
-        const words = _upperCase(interaction.options.getString('words', true));
         let wordsArray: Array<string> = [];
+        let inputWords = interaction.options.getString('words', true);
+        const wordsQuoted =
+          inputWords
+            .match(/(?<quoted>"(.+?)")/gi)
+            ?.map((w) => w.replace(/"/g, ''))
+            .filter((w) => w) || [];
+        inputWords = inputWords.replace(/"/g, '');
+        let wordsToRemove: Array<string> = [];
+        for (const word of wordsQuoted) {
+          wordsToRemove = wordsToRemove.concat(word.split(/\s/g));
+        }
+        wordsToRemove = wordsToRemove.concat(inputWords);
+        for (const wordToRemove of wordsToRemove) {
+          inputWords = inputWords
+            .replace(new RegExp(wordToRemove, 'gi'), '')
+            .trim();
+        }
+        const singleWords = inputWords.split(/\s/g).filter((w) => w);
+        wordsArray = wordsArray.concat(wordsQuoted, singleWords);
+
+        const wordsRegex: Array<RegExp> = wordsArray.map(
+          (w) => new RegExp(`\\b(${w})\\b`, 'gi'),
+        );
         const articles = (await db.getGalnetAll()).filter((g) => {
-          const wholeText = _upperCase(g.title + ' ' + g.content);
-          wordsArray = words.split(/\W/g);
-          return wordsArray.every((w) => wholeText.includes(w));
+          const wholeText = g.title + '\n' + g.content;
+          return wordsRegex.every((w) => w.test(wholeText));
         });
 
         try {
@@ -110,7 +131,7 @@ export default {
             return;
           } else {
             const galnetArticlesFormattedDiscord = articles.map((g) =>
-              prepareDbGalnetDiscordMessage(g, wordsArray),
+              prepareDbGalnetDiscordMessage(g, wordsRegex),
             );
 
             let galnetIndex = 0;
@@ -126,8 +147,6 @@ export default {
                 time: 600000,
               })
               .on('collect', async (c) => {
-                console.debug('Galnet by-text collector interacted.');
-                console.debug(c);
                 switch (c.customId) {
                   case 'galnet_first':
                     galnetIndex = 0;
@@ -274,7 +293,6 @@ export default {
                 }
               })
               .on('end', async () => {
-                console.debug('Galnet by-text collector ended.');
                 interaction.editReply(
                   generateReply(
                     galnetArticlesFormattedDiscord[galnetIndex],

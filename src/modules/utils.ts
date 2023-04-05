@@ -52,7 +52,7 @@ export function prepareRssGalnetDiscordMessage(
 
 export function prepareDbGalnetDiscordMessage(
   galnetEntry: IGalnetArticle,
-  wordsArrayToMark: Array<string> = [],
+  wordsArrayToMark: Array<RegExp> = [],
 ): MessageCreateOptions {
   if (
     !galnetEntry ||
@@ -416,11 +416,10 @@ function getNextUpdate(interval: number): string {
   const nextUpdate = moment().add(interval, 'milliseconds');
   return `<t:${nextUpdate.unix()}:R>`;
 }
-function markWords(content: string, wordsArrayToMark: string[]): string {
+function markWords(content: string, wordsArrayToMark: Array<RegExp>): string {
   let markedContent: string = content;
   for (const word of wordsArrayToMark) {
-    const wordRegex = new RegExp(`(${word})`, 'gi');
-    markedContent = markedContent.replace(wordRegex, '__**$1**__');
+    markedContent = markedContent.replace(word, '__**$1**__');
   }
   return markedContent;
 }
