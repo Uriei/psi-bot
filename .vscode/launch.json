@@ -8,7 +8,11 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "program": "${workspaceFolder}/dist/app.js",
+      "runtimeExecutable": "npm",
+      "windows": {
+        "runtimeExecutable": "npm.cmd"
+      },
+      "runtimeArgs": ["run-script", "start"],
       "preLaunchTask": "prepare",
       "postDebugTask": "Terminate All Tasks",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],

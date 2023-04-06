@@ -105,7 +105,6 @@ export default {
         for (const word of wordsQuoted) {
           wordsToRemove = wordsToRemove.concat(word.split(/\s/g));
         }
-        wordsToRemove = wordsToRemove.concat(inputWords);
         for (const wordToRemove of wordsToRemove) {
           inputWords = inputWords
             .replace(new RegExp(wordToRemove, 'gi'), '')
