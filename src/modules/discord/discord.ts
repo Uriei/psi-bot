@@ -30,6 +30,13 @@ class Discord {
       autocomplete: any;
     };
   };
+  private slashCommandsAdmin: {
+    [key: string]: {
+      data: any;
+      execute: any;
+      autocomplete: any;
+    };
+  };
   private botToken: string = '';
   private botClientId: string = '';
   private galnetChannelID: string = '';
@@ -40,10 +47,12 @@ class Discord {
   private constructor() {
     this.getCredentialInfo();
     this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
-    this.client.on('debug', console.debug).on('warn', console.debug);
+    this.client.on('warn', console.debug);
     this.slashCommands = {};
+    this.slashCommandsAdmin = {};
     this.fillSlashCommands();
     this.registerSlashCommandsDiscord();
+    this.registerSlashCommandsAdminDiscord();
     this.registerSlashCommandsInteractions();
 
     this.login().then().catch();
@@ -76,16 +85,26 @@ class Discord {
       // Set a new item in the Collection with the key as the command name and the value as the exported module
       if ('data' in command && 'execute' in command) {
         _set(
-          this.slashCommands,
+          filePath.includes('admin-')
+            ? this.slashCommandsAdmin
+            : this.slashCommands,
           [command.data.name, 'execute'],
           command.execute,
         );
         _set(
-          this.slashCommands,
+          filePath.includes('admin-')
+            ? this.slashCommandsAdmin
+            : this.slashCommands,
           [command.data.name, 'autocomplete'],
           command.autocomplete,
         );
-        _set(this.slashCommands, [command.data.name, 'data'], command.data);
+        _set(
+          filePath.includes('admin-')
+            ? this.slashCommandsAdmin
+            : this.slashCommands,
+          [command.data.name, 'data'],
+          command.data,
+        );
       } else {
         console.log(
           `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
@@ -97,10 +116,10 @@ class Discord {
   private registerSlashCommandsInteractions() {
     this.client.on(Events.InteractionCreate, async (interaction) => {
       if (interaction.isChatInputCommand()) {
-        const command = _get(this.slashCommands, [
-          interaction.commandName,
-          'execute',
-        ]);
+        const command = _get(
+          { ...this.slashCommands, ...this.slashCommandsAdmin },
+          [interaction.commandName, 'execute'],
+        );
         if (!command) {
           console.error(
             `No command matching ${interaction.commandName} was found.`,
@@ -118,10 +137,10 @@ class Discord {
           });
         }
       } else if (interaction.isAutocomplete()) {
-        const command = _get(this.slashCommands, [
-          interaction.commandName,
-          'autocomplete',
-        ]);
+        const command = _get(
+          { ...this.slashCommands, ...this.slashCommandsAdmin },
+          [interaction.commandName, 'autocomplete'],
+        );
         if (!command) {
           return;
         }
@@ -146,9 +165,42 @@ class Discord {
       }
     }
 
-    await rest.put(Routes.applicationCommands(this.botClientId), {
-      body: commands,
-    });
+    try {
+      const data = (await rest.put(
+        Routes.applicationCommands(this.botClientId),
+        {
+          body: commands,
+        },
+      )) as Array<any>;
+      console.log(`Loaded ${data.length} SlashCommands.`);
+    } catch (error) {
+      console.error('Error loading SlashCommands', error);
+    }
+  }
+  private async registerSlashCommandsAdminDiscord() {
+    const DEV_GUILD_ID = process.env.DEV_GUILD_ID || '';
+    if (!DEV_GUILD_ID) {
+      return;
+    }
+    const rest = new REST({ version: '10' }).setToken(this.botToken);
+    const commands = [];
+    for (const command of Object.keys(this.slashCommandsAdmin)) {
+      if (_has(this.slashCommandsAdmin, [command, 'data'])) {
+        commands.push(_get(this.slashCommandsAdmin, [command, 'data']));
+      }
+    }
+
+    try {
+      const data = (await rest.put(
+        Routes.applicationGuildCommands(this.botClientId, DEV_GUILD_ID),
+        {
+          body: commands,
+        },
+      )) as Array<any>;
+      console.log(`Loaded ${data.length} admin SlashCommands.`);
+    } catch (error) {
+      console.error('Error loading Admin SlashCommands', error);
+    }
   }
 
   private getCredentialInfo() {

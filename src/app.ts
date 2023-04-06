@@ -39,7 +39,7 @@ async function app() {
 }
 
 async function shutdown() {
-  console.info('Closing PSI Bot.');
+  console.log('Closing PSI Bot.');
   discord.setPresence('SHUTDOWN');
   // Stop all timeout intervals
   discord.disconnect();
@@ -49,10 +49,11 @@ async function shutdown() {
   clearTimeout(twitterService.timeoutCallback);
   clearTimeout(communityGoalsService.timeoutCallback);
 
-  console.info('PSI Bot offline.');
+  console.log('PSI Bot offline.');
   process.exit(0);
 }
 
+process.on('SIGBREAK', shutdown);
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 

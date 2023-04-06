@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Discord Bot for the PSI Community",
   "scripts": {
-    "start": "tsc-watch --noClear -p ./tsconfig.dev.json --onSuccess \"node ./dist/app.js\"",
+    "start": "tsc-watch --noClear -p ./tsconfig.dev.json --onCompilationStarted \"npm run prebuild\" --onCompilationComplete \"npm run postbuild:dev\" --onSuccess \"node ./dist/app.js\"",
     "prebuild": "npm run lint && rimraf dist",
     "build": "tsc -p tsconfig.json",
     "postbuild": "node ./scripts/postbuild.js",
