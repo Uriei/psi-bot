@@ -63,6 +63,7 @@ export default {
       const subCommand = interaction.options.getSubcommand();
       let send: InteractionReplyOptions = {};
       if (subCommand === 'by-title') {
+        await interaction.deferReply({ ephemeral: true });
         const title = interaction.options.getString('title', true);
         const publicSearch = interaction.options.getBoolean('public', false);
         const article = (await db.getGalnetAll()).find(
@@ -91,8 +92,9 @@ export default {
             ephemeral: !publicSearch,
           } as InteractionReplyOptions;
         }
-        await interaction.reply(send);
+        await interaction.editReply(send);
       } else if (subCommand === 'by-text') {
+        await interaction.deferReply({ ephemeral: true });
         let wordsArray: Array<string> = [];
         let inputWords = interaction.options.getString('words', true);
         const wordsQuoted =
@@ -123,9 +125,8 @@ export default {
 
         try {
           if (articles.length <= 0) {
-            await interaction.reply({
+            await interaction.editReply({
               content: 'No articles found.',
-              ephemeral: true,
             });
             return;
           } else {
@@ -135,7 +136,7 @@ export default {
 
             let galnetIndex = 0;
 
-            const interactionReply = await interaction.reply(
+            const interactionReply = await interaction.editReply(
               generateReply(galnetArticlesFormattedDiscord[galnetIndex], [
                 ...generateButtonsGalnetByText(galnetIndex, articles.length),
               ]),
@@ -301,9 +302,8 @@ export default {
               });
           }
         } catch (error) {
-          await interaction.reply({
+          await interaction.editReply({
             content: 'There was an error while trying to find the article.',
-            ephemeral: true,
           });
         }
       }

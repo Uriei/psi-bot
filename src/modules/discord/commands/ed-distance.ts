@@ -37,6 +37,7 @@ export default {
 
   execute: {
     async execute(interaction: ChatInputCommandInteraction) {
+      await interaction.deferReply({ ephemeral: true });
       const systemOrigin = interaction.options.getString('origin', true);
       const systemDestination = interaction.options.getString(
         'destination',
@@ -66,8 +67,7 @@ export default {
           reply = 'There was an error while trying to calculate the distance.';
         }
       }
-
-      await interaction.reply({ content: reply });
+      await interaction.editReply({ content: reply });
     },
   },
   autocomplete: {
