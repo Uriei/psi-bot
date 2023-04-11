@@ -60,6 +60,8 @@ class Discord {
     Discord._discordKeepAliveInterval = setInterval(() => {
       if (!this.client.isReady()) {
         this.login().then().catch();
+      } else {
+        this.setPresence('ONLINE');
       }
     }, 300000);
   }
