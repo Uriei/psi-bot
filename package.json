@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@types/google-spreadsheet": "~3.3.2",
-    "@types/lodash": "~4.14.196",
+    "@types/lodash": "~4.14.197",
     "@types/xml2js": "~0.4.11",
     "@typescript-eslint/parser": "~5.59.11",
     "eslint": "~8.40.0",
